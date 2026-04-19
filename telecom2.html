@@ -1,0 +1,2493 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>통신비 지원 신청 | TNKorea</title>
+
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f7f4ee;
+    --surface: #fdfbf7;
+    --surface2: #f0ece3;
+    --border: #e2ddd4;
+    --accent: #6a8fd8;
+    --accent2: #8b73c9;
+    --success: #4aab82;
+    --warning: #d4900a;
+    --danger: #d96b6b;
+    --text: #2d2a24;
+    --text2: #7a7268;
+    --text3: #a89f94;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background decoration */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(106,143,216,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Login Screen ── */
+  #loginScreen {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    background: var(--bg);
+  }
+
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 52px 48px;
+    text-align: center;
+    max-width: 400px; width: 90%;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+    animation: fadeUp .5s ease;
+  }
+
+  .login-logo {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 16px;
+    margin: 0 auto 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+  }
+
+  .login-card h1 {
+    font-size: 22px; font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .login-card p {
+    font-size: 14px; color: var(--text2);
+    margin-bottom: 32px; line-height: 1.6;
+  }
+
+  #googleSignInBtn {
+    width: 100%;
+    padding: 14px 24px;
+    background: white;
+    color: #1f1f1f;
+    border: 1px solid var(--border); border-radius: 12px;
+    font-size: 15px; font-weight: 500;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: all .2s;
+    font-family: 'Pretendard', sans-serif;
+  }
+
+  #googleSignInBtn:hover {
+    background: #f0f0f0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  #loginError {
+    margin-top: 14px;
+    color: var(--danger);
+    font-size: 13px;
+    display: none;
+  }
+
+  /* ── App Layout ── */
+  #app { display: none; min-height: 100vh; }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 72px;
+    position: sticky; top: 0; z-index: 50;
+    overflow: hidden;
+  }
+
+  .header-left {
+    display: flex; align-items: center; gap: 12px;
+    height: 100%;
+  }
+
+  .header-logo {
+    height: 56px;
+    max-height: 56px;
+    display: flex; align-items: center; justify-content: center;
+    background: none;
+    border-radius: 0;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .header-title { font-size: 16px; font-weight: 600; }
+
+  .header-right {
+    display: flex; align-items: center; gap: 16px;
+  }
+
+  .user-badge {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 6px 14px 6px 8px;
+    font-size: 13px;
+  }
+
+  .user-avatar {
+    width: 24px; height: 24px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600;
+  }
+
+  .admin-tag {
+    font-size: 10px;
+    background: rgba(79,142,247,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(79,142,247,0.3);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-logout {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: 'Pretendard', sans-serif;
+    transition: all .2s;
+  }
+
+  .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* ── Tab Nav ── */
+  .tab-nav {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    gap: 4px;
+    position: sticky;
+    top: 72px;
+    z-index: 49;
+  }
+
+  .tab-btn {
+    background: none; border: none;
+    color: var(--text2);
+    font-size: 14px; font-weight: 500;
+    padding: 14px 18px;
+    cursor: pointer;
+    font-family: 'Pretendard', sans-serif;
+    border-bottom: 2px solid transparent;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn:hover:not(.active) { color: var(--text); }
+
+  /* ── Main Content ── */
+  .main { padding: 32px; max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    font-size: 16px; font-weight: 600;
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .card-title .icon {
+    width: 28px; height: 28px;
+    background: rgba(79,142,247,0.1);
+    border: 1px solid rgba(79,142,247,0.2);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+
+  /* ── Summary Chips ── */
+  .summary-row {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  .summary-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    flex: 1; min-width: 140px;
+  }
+
+  .summary-chip .label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+  .summary-chip .value { font-size: 20px; font-weight: 700; font-family: 'DM Mono', monospace; }
+  .summary-chip .value.accent { color: var(--accent); }
+  .summary-chip .value.success { color: var(--success); }
+  .summary-chip .value.warning { color: var(--warning); }
+
+  /* ── Form ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1/-1; }
+
+  label {
+    font-size: 13px; font-weight: 500; color: var(--text2);
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  label .required { color: var(--accent); }
+
+  input, select, textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    padding: 11px 14px;
+    font-size: 14px;
+    font-family: 'Pretendard', sans-serif;
+    transition: border-color .2s;
+    outline: none;
+    width: 100%;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(106,143,216,0.12);
+  }
+
+  input[readonly] {
+    opacity: 0.6; cursor: not-allowed;
+  }
+
+  select option { background: var(--surface2); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* Amount preview */
+  .amount-preview {
+    background: rgba(79,142,247,0.05);
+    border: 1px solid rgba(79,142,247,0.2);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: 14px;
+    color: var(--text2);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .amount-preview .amount-val {
+    font-size: 18px; font-weight: 700;
+    font-family: 'DM Mono', monospace;
+    color: var(--accent);
+  }
+
+  /* File upload */
+  .file-upload-area {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    position: relative;
+  }
+
+  .file-upload-area:hover, .file-upload-area.drag-over {
+    border-color: var(--accent);
+    background: rgba(79,142,247,0.05);
+  }
+
+  .file-upload-area input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer;
+    width: 100%; height: 100%;
+    padding: 0; border: none; background: none;
+  }
+
+  .file-upload-area .upload-text { font-size: 14px; color: var(--text2); }
+  .file-upload-area .upload-text strong { color: var(--accent); }
+  .file-upload-area .upload-hint { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+  .file-preview {
+    margin-top: 10px;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .file-preview img {
+    width: 36px; height: 36px; border-radius: 4px; object-fit: cover;
+  }
+
+  .file-preview .remove-file {
+    margin-left: auto;
+    background: none; border: none;
+    color: var(--danger); cursor: pointer; font-size: 16px;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer;
+    font-family: 'Pretendard', sans-serif;
+    border: none;
+    transition: all .2s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+  }
+
+  .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(106,143,216,0.3); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .btn-secondary {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-success { background: var(--success); color: #0f1117; }
+  .btn-danger { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
+  .btn-danger:hover { background: rgba(248,113,113,0.1); }
+  .btn-sm { padding: 6px 14px; font-size: 12px; border-radius: 7px; }
+
+  .form-actions {
+    display: flex; gap: 10px; justify-content: flex-end;
+    margin-top: 24px; padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── Status Badge ── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 12px; font-weight: 600;
+  }
+
+  .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .badge-pending { background: rgba(251,191,36,0.1); color: var(--warning); }
+  .badge-approved { background: rgba(52,211,153,0.1); color: var(--success); }
+  .badge-rejected { background: rgba(248,113,113,0.1); color: var(--danger); }
+
+  /* ── Table ── */
+  .table-wrap { overflow-x: auto; }
+
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  th {
+    text-align: left;
+    font-size: 11px; font-weight: 600;
+    color: var(--text3);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 14px 14px;
+    border-bottom: 1px solid rgba(42,47,69,0.5);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .mono { font-family: 'DM Mono', monospace; }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center; padding: 48px;
+    color: var(--text3); font-size: 14px;
+  }
+
+  .empty-state .empty-icon { font-size: 36px; margin-bottom: 12px; }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    max-width: 480px; width: 100%;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+    animation: fadeUp .3s ease;
+    max-height: 90vh; overflow-y: auto;
+  }
+
+  .modal-title {
+    font-size: 18px; font-weight: 700;
+    margin-bottom: 20px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .modal-close {
+    background: none; border: none; color: var(--text2);
+    cursor: pointer; font-size: 20px; line-height: 1;
+  }
+
+  .modal-close:hover { color: var(--text); }
+
+  .detail-row {
+    display: flex; justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    gap: 12px;
+  }
+
+  .detail-row:last-child { border-bottom: none; }
+  .detail-label { color: var(--text2); flex-shrink: 0; }
+  .detail-value { font-weight: 500; text-align: right; }
+
+  .receipt-img {
+    width: 100%; border-radius: 8px; margin-top: 12px;
+    border: 1px solid var(--border);
+  }
+
+  .modal-actions {
+    display: flex; gap: 10px; margin-top: 24px;
+  }
+
+  .modal-actions .btn { flex: 1; justify-content: center; }
+
+  /* Reason input */
+  .reason-area { margin-top: 12px; display: none; }
+  .reason-area.visible { display: block; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 14px;
+    z-index: 999;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    transform: translateY(80px); opacity: 0;
+    transition: all .3s cubic-bezier(0.34,1.56,0.64,1);
+    display: flex; align-items: center; gap: 10px;
+    max-width: 320px;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: rgba(52,211,153,0.4); }
+  .toast.error { border-color: rgba(248,113,113,0.4); }
+
+  /* ── Animations ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in { animation: fadeUp .4s ease; }
+
+  /* ── Loading ── */
+  .loading {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; color: var(--text2); font-size: 14px;
+    padding: 32px;
+  }
+
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .main { padding: 16px; }
+    header { padding: 0 16px; }
+    .tab-nav { padding: 0 16px; overflow-x: auto; }
+    .summary-row { gap: 8px; }
+    .summary-chip { min-width: 100px; padding: 12px 14px; }
+    .header-title { display: none; }
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">📱</div>
+    <h1>통신비 지원 신청</h1>
+    <p>TNKorea 임직원 전용 시스템입니다.<br>Google 계정으로 로그인하세요.</p>
+    <button id="googleSignInBtn" onclick="signInWithGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18">
+        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+        <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/>
+        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+      </svg>
+      Google 계정으로 로그인
+    </button>
+    <div id="loginError">접근 권한이 없는 계정입니다.</div>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <header>
+    <div class="header-left">
+      <div class="header-logo" id="headerLogoBox">
+        <img id="headerLogoImg" src="" alt="logo" style="height:56px; max-height:56px; width:auto; max-width:160px; object-fit:contain; display:none;">
+        <span id="headerLogoEmoji" style="font-size:14px;">📱</span>
+      </div>
+      <span class="header-title">통신비 지원 신청</span>
+    </div>
+    <div class="header-right">
+      <div class="user-badge">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <span id="userEmail2" style="font-size:12px; color:var(--text2);"></span>
+        <span class="admin-tag" id="adminTag" style="display:none;">ADMIN</span>
+      </div>
+      <button class="btn-logout" onclick="signOut()">로그아웃</button>
+    </div>
+  </header>
+
+  <div class="tab-nav" id="tabNav">
+    <button class="tab-btn active" onclick="showTab('apply')" id="tab-apply">📝 신청하기</button>
+    <button class="tab-btn" onclick="showTab('history')" id="tab-history">📋 내 신청 이력</button>
+    <button class="tab-btn" onclick="showTab('support')" id="tab-support">💡 지원사항</button>
+    <button class="tab-btn" onclick="showTab('admin')" id="tab-admin" style="display:none;">⚙️ 관리자 승인</button>
+  </div>
+
+  <div class="main">
+
+    <!-- ── APPLY TAB ── -->
+    <div id="tabContent-apply" class="fade-in">
+      <div class="summary-row" id="summaryRow">
+        <div class="summary-chip">
+          <div class="label">이번 달 지원 금액</div>
+          <div class="value accent" id="summaryAmount">-</div>
+        </div>
+        <div class="summary-chip">
+          <div class="label">이번 달 신청 상태</div>
+          <div class="value" id="summaryStatus" style="font-size:14px; padding-top:2px;">-</div>
+        </div>
+        <div class="summary-chip">
+          <div class="label">누적 지급 횟수</div>
+          <div class="value success" id="summaryCount">-</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <div class="icon">📝</div>
+          통신비 지원 신청
+        </div>
+
+        <div id="alreadyApplied" style="display:none; text-align:center; padding:32px; color:var(--text2);">
+          <div style="font-size:36px; margin-bottom:12px;">✅</div>
+          <div style="font-size:16px; font-weight:600; margin-bottom:8px;" id="alreadyAppliedTitle">신청이 완료되었습니다</div>
+          <div style="font-size:13px;" id="alreadyAppliedStatus"></div>
+        </div>
+
+        <div id="applyForm">
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>신청자 <span class="required">*</span></label>
+              <input type="text" id="applicantName" readonly placeholder="로그인 후 자동 입력">
+            </div>
+            <div class="form-group">
+              <label>신청 월 <span class="required">*</span></label>
+              <input type="month" id="applyMonth" max="">
+            </div>
+            <div class="form-group">
+              <label>통신사 <span class="required">*</span></label>
+              <select id="carrier">
+                <option value="">선택</option>
+                <option>SKT</option>
+                <option>KT</option>
+                <option>LG U+</option>
+                <option>알뜰폰(MVNO)</option>
+                <option>기타</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>실제 납부 금액 (원) <span class="required">*</span></label>
+              <input type="number" id="actualAmount" placeholder="예: 65000" oninput="updateAmountPreview()">
+            </div>
+            <div class="form-group full">
+              <label>지원 예정 금액</label>
+              <div class="amount-preview">
+                <span id="amountPreviewText">금액 입력 후 표시됩니다</span>
+                <span class="amount-val" id="amountPreviewVal">-</span>
+              </div>
+            </div>
+            <div class="form-group full">
+              <label>영수증 첨부 <span class="required">*</span></label>
+              <div class="file-upload-area" id="uploadArea">
+                <input type="file" id="receiptFile" accept="image/*,.pdf" onchange="handleFileSelect(event)">
+                <div class="upload-text">📎 <strong>파일 선택</strong> 또는 드래그앤드롭</div>
+                <div class="upload-hint">이미지(JPG, PNG) 또는 PDF · 최대 10MB</div>
+              </div>
+              <div class="file-preview" id="filePreview" style="display:none;">
+                <img id="previewImg" src="" alt="preview">
+                <span id="fileName"></span>
+                <button class="remove-file" onclick="removeFile()">✕</button>
+              </div>
+            </div>
+            <div class="form-group full">
+              <label>메모 (선택)</label>
+              <textarea id="memo" placeholder="특이사항이 있으면 입력하세요"></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-secondary" onclick="resetForm()">초기화</button>
+            <button class="btn btn-primary" id="submitBtn" onclick="submitApplication()">
+              📤 신청 제출
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SUPPORT TAB ── -->
+    <div id="tabContent-support" style="display:none;" class="fade-in">
+      <div class="card">
+        <div class="card-title">
+          <div class="icon">💡</div>
+          통신비 지원사항
+        </div>
+        <div id="supportTabContent"></div>
+      </div>
+    </div>
+
+    <!-- ── HISTORY TAB ── -->
+    <div id="tabContent-history" style="display:none;" class="fade-in">
+      <div class="card">
+        <div class="card-title">
+          <div class="icon">📋</div>
+          내 신청 이력
+          <div style="margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <select id="historyYearFilter" onchange="loadHistory()" style="width:110px; padding:6px 10px; font-size:13px;"></select>
+            <select id="historyMonthFilter" onchange="loadHistory()" style="width:90px; padding:6px 10px; font-size:13px;"></select>
+            <button class="btn btn-secondary btn-sm" onclick="loadHistory()">🔄 새로고침</button>
+          </div>
+        </div>
+        <!-- 이력 요약 -->
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;" id="historySummary"></div>
+        <div id="historyContent">
+          <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ADMIN TAB ── -->
+    <div id="tabContent-admin" style="display:none;" class="fade-in">
+      <div class="summary-row">
+        <div class="summary-chip">
+          <div class="label">대기 중</div>
+          <div class="value warning" id="adminPending">-</div>
+        </div>
+        <div class="summary-chip">
+          <div class="label">승인 완료</div>
+          <div class="value success" id="adminApproved">-</div>
+        </div>
+        <div class="summary-chip">
+          <div class="label">반려</div>
+          <div class="value" style="color:var(--danger)" id="adminRejected">-</div>
+        </div>
+        <div class="summary-chip">
+          <div class="label">총 지급 예정</div>
+          <div class="value accent" id="adminTotal">-</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <div class="icon">⚙️</div>
+          전체 신청 현황
+          <div style="margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <div style="display:flex; background:var(--surface2); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+              <button id="viewModeMonth"  class="btn btn-sm" style="border-radius:0; border:none; background:var(--accent); color:white;" onclick="setViewMode('month')">월별</button>
+              <button id="viewModeYear"   class="btn btn-sm" style="border-radius:0; border:none;" onclick="setViewMode('year')">연도별</button>
+              <button id="viewModeDept"   class="btn btn-sm" style="border-radius:0; border:none;" onclick="setViewMode('dept')">부서별</button>
+              <button id="viewModeEmp"    class="btn btn-sm" style="border-radius:0; border:none;" onclick="setViewMode('emp')">직원별</button>
+            </div>
+            <select id="adminEmpFilter" onchange="loadAdminList()" style="width:100px; padding:6px 10px; font-size:13px; display:none;">
+              <option value="">전체 직원</option>
+            </select>
+            <select id="adminYearFilter" onchange="loadAdminList()" style="width:110px; padding:6px 10px; font-size:13px;">
+            </select>
+            <select id="adminMonthFilter" onchange="loadAdminList()" style="width:100px; padding:6px 10px; font-size:13px;">
+            </select>
+            <button class="btn btn-secondary btn-sm" onclick="loadAdminList()">🔄 새로고침</button>
+          </div>
+        </div>
+        <div id="adminContent">
+          <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
+        </div>
+      </div>
+
+      <!-- 영수증 다운로드 카드 -->
+      <div class="card" id="receiptDownloadCard">
+        <div class="card-title">
+          <div class="icon">📦</div>
+          영수증 일괄 다운로드
+        </div>
+        <div style="font-size:13px; color:var(--text2); margin-bottom:16px;">
+          승인된 신청의 영수증을 월별 또는 연도별로 ZIP 파일로 다운로드할 수 있어요.
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+          <div class="form-group" style="flex:1; min-width:120px;">
+            <label>연도</label>
+            <select id="receiptYearSel" style="width:100%;"></select>
+          </div>
+          <div class="form-group" style="flex:1; min-width:120px;" id="receiptMonthGroup">
+            <label>월 (월별 다운로드 시)</label>
+            <select id="receiptMonthSel" style="width:100%;">
+              <option value="">전체 월 (연도별)</option>
+              <option value="01">1월</option><option value="02">2월</option>
+              <option value="03">3월</option><option value="04">4월</option>
+              <option value="05">5월</option><option value="06">6월</option>
+              <option value="07">7월</option><option value="08">8월</option>
+              <option value="09">9월</option><option value="10">10월</option>
+              <option value="11">11월</option><option value="12">12월</option>
+            </select>
+          </div>
+          <div style="display:flex; gap:8px; padding-bottom:1px;">
+            <button class="btn btn-primary" onclick="downloadReceiptsZip()" id="receiptDownloadBtn">
+              📥 ZIP 다운로드
+            </button>
+          </div>
+        </div>
+        <div id="receiptDownloadStatus" style="margin-top:12px; font-size:13px; color:var(--text2); display:none;"></div>
+      </div>
+
+      <!-- 직원별 지원금액 설정 카드 -->
+      <div class="card" id="salarySettingCard">
+        <div class="card-title">
+          <div class="icon">💰</div>
+          직원별 지원 금액 설정
+        </div>
+        <div style="font-size:13px; color:var(--text2); margin-bottom:20px;">
+          직원별로 통신비 지원 금액을 설정하세요. 설정한 금액은 지원사항 탭과 신청 폼에 자동 반영돼요.
+        </div>
+        <div id="salarySettingList"></div>
+        <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border); display:flex; justify-content:flex-end;">
+          <button class="btn btn-primary" onclick="saveSalarySettings()">💾 저장</button>
+        </div>
+      </div>
+
+      <!-- 관리자 권한 관리 카드 -->
+      <div class="card" id="adminMgmtCard">
+        <div class="card-title">
+          <div class="icon">👑</div>
+          직원 · 관리자 관리
+        </div>
+        <!-- 회사 로고 업로드 -->
+        <div style="margin-bottom:24px; padding-bottom:24px; border-bottom:1px solid var(--border);">
+          <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:12px;">🏢 회사 로고</div>
+          <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+            <div id="logoPreviewBox" style="width:64px; height:64px; border:1px solid var(--border); border-radius:12px; background:var(--surface2); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+              <img id="logoPreview" src="" style="width:100%; height:100%; object-fit:contain; display:none;">
+              <span id="logoEmptyText" style="font-size:24px;">🏢</span>
+            </div>
+            <div style="flex:1; min-width:200px;">
+              <div style="font-size:13px; color:var(--text2); margin-bottom:8px;">이미지 파일을 업로드하면 헤더에 회사 로고가 표시돼요.<br>권장 크기: 정사각형 (예: 200×200px), PNG/JPG</div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <label class="btn btn-secondary btn-sm" style="cursor:pointer;">
+                  📁 로고 업로드
+                  <input type="file" accept="image/*" style="display:none;" onchange="uploadLogo(event)">
+                </label>
+                <button class="btn btn-sm" style="border:1px solid var(--border); color:var(--danger);" onclick="removeLogo()">삭제</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="adminMgmtList"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal" style="display:none;" onclick="closeModal(event)">
+  <div class="modal" id="detailModalContent">
+    <div class="modal-title">
+      <span>신청 상세</span>
+      <button class="modal-close" onclick="document.getElementById('detailModal').style.display='none'">✕</button>
+    </div>
+    <div id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────
+const CLIENT_ID = '476172492762-0bbsdflp5r12btps8e85nnc74jgsd2h3.apps.googleusercontent.com';
+
+const ALLOWED_EMAILS = [
+  'ellis@tnkorea.co.kr',
+  'albert33@tnkorea.co.kr',
+  'alswn33@tnkorea.co.kr',
+  'dhjack33@tnkorea.co.kr',
+  'rn0105@tnkorea.co.kr',
+  'mjkim@tnkorea.co.kr',
+  'sunny@tnkorea.co.kr'
+];
+
+// 관리자 이메일 목록 (여러 명 가능)
+const ADMIN_EMAILS = ['ellis@tnkorea.co.kr', 'alswn33@tnkorea.co.kr', 'albert33@tnkorea.co.kr'];
+const ADMIN_EMAIL = ADMIN_EMAILS[0]; // 하위 호환용 (사용 안 함)
+
+// 실제 사용금액 전액 지원 대상
+const FULL_AMOUNT_EMAILS = ['ellis@tnkorea.co.kr', 'albert33@tnkorea.co.kr'];
+const FIXED_AMOUNT = 50000; // 5만원
+
+// ── 직원별 지원금액 동적 관리 ──────────────────────────────
+function getSalarySettings() {
+  try {
+    const saved = localStorage.getItem('tnk_salary_settings');
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  // 초기값: 코드 기반 기본값
+  const settings = {};
+  ALLOWED_EMAILS.forEach(email => {
+    settings[email] = FULL_AMOUNT_EMAILS.includes(email) ? 'full' : FIXED_AMOUNT;
+  });
+  return settings;
+}
+
+function saveSalarySettingsData(data) {
+  localStorage.setItem('tnk_salary_settings', JSON.stringify(data));
+}
+
+function getEmployeeLimit(email) {
+  const settings = getSalarySettings();
+  const val = settings[email];
+  if (val === undefined) return FIXED_AMOUNT;
+  if (val === 'full') return null; // 전액
+  return Number(val);
+}
+
+function loadSalarySettingList() {
+  const el = document.getElementById('salarySettingList');
+  if (!el) return;
+  const employees = getEmployees();
+  const settings = getSalarySettings();
+
+  el.innerHTML = `
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      ${employees.map(emp => {
+        const cur = settings[emp.email];
+        const isFull = cur === 'full';
+        const amount = isFull ? '' : (cur || FIXED_AMOUNT);
+        const types = getEmployeeTypes();
+        const empType = types[emp.email] || '직원';
+        return `
+          <div style="display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; flex-wrap:wrap;">
+            <div style="min-width:100px; flex:1;">
+              <div style="font-size:14px; font-weight:600;">${emp.name}</div>
+              <div style="font-size:12px; color:var(--text2);">${emp.email}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <select id="empType_${emp.email.replace('@','_').replace('.','_')}"
+                style="width:80px; padding:6px 8px; font-size:13px;">
+                <option value="직원" ${empType==='직원'?'selected':''}>직원</option>
+                <option value="임원" ${empType==='임원'?'selected':''}>임원</option>
+                <option value="기타" ${empType==='기타'?'selected':''}>기타</option>
+              </select>
+              <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                <input type="radio" name="salaryType_${emp.email.replace('@','_').replace('.','_')}"
+                  value="full" ${isFull ? 'checked' : ''}
+                  onchange="toggleSalaryInput('${emp.email}', true)">
+                전액 지원
+              </label>
+              <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                <input type="radio" name="salaryType_${emp.email.replace('@','_').replace('.','_')}"
+                  value="limit" ${!isFull ? 'checked' : ''}
+                  onchange="toggleSalaryInput('${emp.email}', false)">
+                한도 지정
+              </label>
+              <input type="number" id="salaryAmt_${emp.email.replace('@','_').replace('.','_')}"
+                value="${amount}" placeholder="예: 50000"
+                style="width:110px; ${isFull ? 'display:none;' : ''}"
+                min="0" step="1000">
+              <span style="font-size:13px; color:var(--text2); ${isFull ? 'display:none;' : ''}"
+                id="salaryUnit_${emp.email.replace('@','_').replace('.','_')}">원</span>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function toggleSalaryInput(email, isFull) {
+  const key = email.replace('@','_').replace('.','_');
+  const input = document.getElementById(`salaryAmt_${key}`);
+  const unit  = document.getElementById(`salaryUnit_${key}`);
+  if (input) input.style.display = isFull ? 'none' : '';
+  if (unit)  unit.style.display  = isFull ? 'none' : '';
+}
+
+function saveSalarySettings() {
+  const employees = getEmployees();
+  const settings = {};
+  const empTypes = {};
+  employees.forEach(emp => {
+    const key = emp.email.replace('@','_').replace('.','_');
+    const radios = document.querySelectorAll(`input[name="salaryType_${key}"]`);
+    let type = 'limit';
+    radios.forEach(r => { if (r.checked) type = r.value; });
+    if (type === 'full') {
+      settings[emp.email] = 'full';
+    } else {
+      const val = parseInt(document.getElementById(`salaryAmt_${key}`)?.value || '0');
+      settings[emp.email] = val > 0 ? val : FIXED_AMOUNT;
+    }
+    // 직원 유형 저장
+    const selType = document.getElementById(`empType_${key}`)?.value || '직원';
+    empTypes[emp.email] = selType;
+  });
+  saveSalarySettingsData(settings);
+  saveEmployeeTypes(empTypes);
+  showToast('✅ 지원 금액 및 직원 유형이 저장됐어요!', 'success');
+  renderSupportTab();
+}
+
+// 부서 정보
+const DEPARTMENTS = {
+  '대표':          ['ellis@tnkorea.co.kr'],
+  'MICE 사업본부': ['albert33@tnkorea.co.kr'],
+  'MICE 기획1팀':  ['mjkim@tnkorea.co.kr', 'rn0105@tnkorea.co.kr', 'alswn33@tnkorea.co.kr', 'dhjack33@tnkorea.co.kr'],
+  'MICE 기획2팀':  ['sunny@tnkorea.co.kr']
+};
+
+function getDeptByEmail(email) {
+  for (const [dept, emails] of Object.entries(DEPARTMENTS)) {
+    if (emails.includes(email)) return dept;
+  }
+  return '기타';
+}
+
+// Google Sheets 설정 (기존 카드 시스템 시트 ID 또는 새 시트 ID로 교체)
+// 사용하려면 아래 SHEET_ID를 실제 Google Sheets ID로 교체하세요
+const SHEET_ID = 'YOUR_SHEET_ID_HERE';
+const SHEET_NAME = '통신비신청';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz86TeZFnYLH6JyO3_mFPmsEGF8x4koMy3b4OBMah1Z7UfwSJ4JdmKDOd9HYEOUYoP1/exec';
+
+// ── STATE ────────────────────────────────────────────────
+let currentUser = null;
+let applications = []; // local cache (localStorage로 관리)
+let tokenClient = null;
+let accessToken = null;
+
+// ── LOCAL STORAGE ─────────────────────────────────────────
+// ── Sheets API 헬퍼 ──────────────────────────────────────
+// ── 통합 API 함수 (GET/POST 모두 처리) ──────────────────
+async function apiCall(body) {
+  if (!APPS_SCRIPT_URL) { showToast('Apps Script URL이 설정되지 않았어요.', 'error'); return null; }
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(body)
+    });
+    const text = await res.text();
+    try { return JSON.parse(text); } catch { return { success: true }; }
+  } catch(e) {
+    console.error('API POST error:', e);
+    return null;
+  }
+}
+
+async function apiGet(params) {
+  if (!APPS_SCRIPT_URL) return null;
+  try {
+    const query = new URLSearchParams(params).toString();
+    const res = await fetch(APPS_SCRIPT_URL + '?' + query, { redirect: 'follow' });
+    const text = await res.text();
+    try { return JSON.parse(text); } catch { return null; }
+  } catch(e) {
+    console.error('API GET error:', e);
+    return null;
+  }
+}
+
+// 로컬 캐시 (빠른 렌더링용)
+function getCachedApps() {
+  try { return JSON.parse(localStorage.getItem('tnk_telecom_cache') || '[]'); } catch { return []; }
+}
+function setCachedApps(apps) {
+  localStorage.setItem('tnk_telecom_cache', JSON.stringify(apps));
+}
+
+// ── LOGO ──────────────────────────────────────────────────
+const DEFAULT_LOGO_URL = 'https://j33www.github.io/card-receipt/logo.jpg';
+
+function initLogo() {
+  const saved = localStorage.getItem('tnk_company_logo');
+  applyLogo(saved || DEFAULT_LOGO_URL);
+}
+
+function applyLogo(dataUrl) {
+  // 헤더
+  const img = document.getElementById('headerLogoImg');
+  const emoji = document.getElementById('headerLogoEmoji');
+  if (img) { img.src = dataUrl; img.style.display = 'block'; img.style.height = '56px'; img.style.maxHeight = '56px'; img.style.width = 'auto'; img.style.maxWidth = '160px'; }
+  if (emoji) emoji.style.display = 'none';
+  // 관리자 미리보기
+  const preview = document.getElementById('logoPreview');
+  const empty = document.getElementById('logoEmptyText');
+  if (preview) { preview.src = dataUrl; preview.style.display = 'block'; }
+  if (empty) empty.style.display = 'none';
+}
+
+function uploadLogo(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { showToast('로고 파일은 2MB 이하로 해주세요.', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    localStorage.setItem('tnk_company_logo', e.target.result);
+    applyLogo(e.target.result);
+    showToast('✅ 로고가 적용됐어요!', 'success');
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeLogo() {
+  localStorage.removeItem('tnk_company_logo');
+  const img = document.getElementById('headerLogoImg');
+  const emoji = document.getElementById('headerLogoEmoji');
+  if (img) { img.src = ''; img.style.display = 'none'; }
+  if (emoji) emoji.style.display = 'block';
+  const preview = document.getElementById('logoPreview');
+  const empty = document.getElementById('logoEmptyText');
+  if (preview) { preview.src = ''; preview.style.display = 'none'; }
+  if (empty) empty.style.display = 'block';
+  showToast('로고가 삭제됐어요.', 'success');
+}
+
+// ── AUTH ──────────────────────────────────────────────────
+function initGoogleAuth() {
+  // Check existing session — fix name if outdated
+  const saved = localStorage.getItem('tnk_telecom_user');
+  if (saved) {
+    const user = JSON.parse(saved);
+    // 이름 항상 최신 매핑으로 덮어씌우기
+    user.name = getEmployeeName(user.email);
+    localStorage.setItem('tnk_telecom_user', JSON.stringify(user));
+    loginSuccess(user);
+  }
+}
+
+function signInWithGoogle() {
+  if (!window.google) {
+    showToast('Google 라이브러리 로딩 중입니다. 잠시 후 다시 시도해 주세요.', 'error');
+    return;
+  }
+
+  google.accounts.id.initialize({
+    client_id: CLIENT_ID,
+    callback: handleCredentialResponse,
+    auto_select: false,
+    cancel_on_tap_outside: false
+  });
+
+  google.accounts.id.prompt((notification) => {
+    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+      // Fallback: render popup button
+      google.accounts.id.renderButton(
+        document.getElementById('googleSignInBtn').parentElement,
+        { theme: 'outline', size: 'large', width: 300 }
+      );
+      showToast('팝업이 차단된 경우 허용 후 다시 시도해 주세요.', 'error');
+    }
+  });
+}
+
+// 이메일 → 이름 매핑
+const EMAIL_NAMES = {
+  'ellis@tnkorea.co.kr':    '조삼선',
+  'albert33@tnkorea.co.kr': '김상윤',
+  'alswn33@tnkorea.co.kr':  '김민주',
+  'dhjack33@tnkorea.co.kr': '김동현',
+  'rn0105@tnkorea.co.kr':   '구문회',
+  'mjkim@tnkorea.co.kr':    '김민지',
+  'sunny@tnkorea.co.kr':    '김경선'
+};
+
+function handleCredentialResponse(response) {
+  const payload = parseJwt(response.credential);
+  const email = payload.email;
+
+  if (!getEmployeeEmails().includes(email)) {
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
+
+  const user = {
+    email: email,
+    name: getEmployeeName(email),
+    picture: payload.picture || ''
+  };
+
+  localStorage.setItem('tnk_telecom_user', JSON.stringify(user));
+  loginSuccess(user);
+}
+
+function loginSuccess(user) {
+  currentUser = user;
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  // Header
+  document.getElementById('userEmail2').textContent = user.email;
+  document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+
+  if (getAdminEmails().includes(user.email)) {
+    document.getElementById('adminTag').style.display = 'inline';
+    document.getElementById('tab-admin').style.display = 'inline-flex';
+  }
+
+  // Init form
+  document.getElementById('applicantName').value = user.name;
+  const now = new Date();
+  document.getElementById('applyMonth').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('applyMonth').max = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+
+  updateAmountPreview();
+  loadSummary();
+  checkAlreadyApplied();
+  initAdminMonthFilter();
+}
+
+function signOut() {
+  localStorage.removeItem('tnk_telecom_user');
+  currentUser = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginError').style.display = 'none';
+  if (window.google) google.accounts.id.disableAutoSelect();
+}
+
+function parseJwt(token) {
+  const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+  return JSON.parse(atob(base64));
+}
+
+// ── AMOUNT ────────────────────────────────────────────────
+function getUserMaxAmount() {
+  if (!currentUser) return FIXED_AMOUNT;
+  return getEmployeeLimit(currentUser.email);
+}
+
+function calcSupportAmount(actual) {
+  const max = getUserMaxAmount();
+  if (max === null) return actual; // full
+  return Math.min(actual, max);
+}
+
+function renderSupportBanner() {}
+
+function updateAmountPreview() {
+  const actual = parseInt(document.getElementById('actualAmount')?.value || '0') || 0;
+  const max = getUserMaxAmount();
+  const support = calcSupportAmount(actual);
+  const previewVal = document.getElementById('amountPreviewVal');
+  const previewText = document.getElementById('amountPreviewText');
+
+  if (!previewVal) return;
+
+  if (actual <= 0) {
+    previewVal.textContent = '-';
+    previewText.textContent = '금액 입력 후 표시됩니다';
+    return;
+  }
+
+  previewVal.textContent = support.toLocaleString() + '원';
+  if (max === null) {
+    previewText.textContent = '실제 사용금액 전액 지원';
+  } else if (actual <= (max || FIXED_AMOUNT)) {
+    previewText.textContent = '사용금액 전액 지원 (5만원 이하)';
+  } else {
+    previewText.textContent = `한도 초과 → 최대 ${(max || FIXED_AMOUNT).toLocaleString()}원 지원`;
+  }
+}
+
+// ── SUMMARY ───────────────────────────────────────────────
+function loadSummary() {
+  const apps = getCachedApps().filter(a => String(a.email) === currentUser.email);
+  const month = document.getElementById('applyMonth')?.value || getCurrentMonth();
+  const thisMonth = apps.filter(a => a.month === month);
+  const approved = apps.filter(a => a.status === '승인');
+
+  const max = getUserMaxAmount();
+  const isFull = (max === null);
+  document.getElementById('summaryAmount').textContent =
+    isFull ? '전액 지원' : (max || FIXED_AMOUNT).toLocaleString() + '원 한도';
+
+  if (thisMonth.length > 0) {
+    const a = thisMonth[0];
+    const el = document.getElementById('summaryStatus');
+    if (a.status === '대기') el.innerHTML = '<span class="badge badge-pending">검토 중</span>';
+    else if (a.status === '승인') el.innerHTML = '<span class="badge badge-approved">승인 완료</span>';
+    else el.innerHTML = '<span class="badge badge-rejected">반려</span>';
+  } else {
+    document.getElementById('summaryStatus').textContent = '미신청';
+  }
+
+  document.getElementById('summaryCount').textContent = approved.length + '회';
+}
+
+function getCurrentMonth() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+}
+
+// ── CHECK ALREADY APPLIED ─────────────────────────────────
+async function checkAlreadyApplied() {
+  const month = document.getElementById('applyMonth')?.value || getCurrentMonth();
+
+  // Sheets에서 본인 신청 조회
+  const result = await apiGet({ action: 'getApps', email: currentUser.email });
+  const apps = (result?.apps || []).filter(a => {
+    const m = String(a.month);
+    // Sheets에서 날짜형으로 올 경우 처리
+    if (m.includes('T') || m.includes('/')) {
+      const d = new Date(m);
+      const formatted = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+      return formatted === month;
+    }
+    return m === month;
+  });
+
+  // 로컬 캐시 업데이트
+  const cached = getCachedApps().filter(a => a.email !== currentUser.email);
+  setCachedApps([...cached, ...(result?.apps || []).map(a => ({...a, id: String(a.id)}))]);
+
+  if (apps.length > 0) {
+    document.getElementById('applyForm').style.display = 'none';
+    document.getElementById('alreadyApplied').style.display = 'block';
+    const a = apps[0];
+    let statusText = '';
+    if (a.status === '대기') statusText = '⏳ 관리자 검토 중입니다.';
+    else if (a.status === '승인') statusText = `✅ 승인되었습니다. 지원금액: ${Number(a.supportAmount).toLocaleString()}원`;
+    else statusText = `❌ 반려되었습니다. 사유: ${a.rejectReason || '-'}`;
+    document.getElementById('alreadyAppliedStatus').textContent = statusText;
+    document.getElementById('alreadyAppliedTitle').textContent = '이번 달 신청이 완료되었습니다';
+  } else {
+    document.getElementById('applyForm').style.display = 'block';
+    document.getElementById('alreadyApplied').style.display = 'none';
+  }
+}
+
+// ── FILE UPLOAD ───────────────────────────────────────────
+let uploadedFileData = null;
+
+function handleFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { showToast('파일 크기가 10MB를 초과합니다.', 'error'); return; }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    uploadedFileData = { name: file.name, data: e.target.result, type: file.type };
+    document.getElementById('fileName').textContent = file.name;
+    const img = document.getElementById('previewImg');
+    if (file.type.startsWith('image/')) {
+      img.src = e.target.result;
+      img.style.display = 'block';
+    } else {
+      img.style.display = 'none';
+    }
+    document.getElementById('filePreview').style.display = 'flex';
+    document.getElementById('uploadArea').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeFile() {
+  uploadedFileData = null;
+  document.getElementById('receiptFile').value = '';
+  document.getElementById('filePreview').style.display = 'none';
+  document.getElementById('uploadArea').style.display = 'block';
+}
+
+// ── SUBMIT ────────────────────────────────────────────────
+async function submitApplication() {
+  const month = document.getElementById('applyMonth').value;
+  const carrier = document.getElementById('carrier').value;
+  const actual = parseInt(document.getElementById('actualAmount').value || '0');
+  const memo = document.getElementById('memo').value;
+
+  if (!month) { showToast('신청 월을 선택해 주세요.', 'error'); return; }
+  if (!carrier) { showToast('통신사를 선택해 주세요.', 'error'); return; }
+  if (!actual || actual <= 0) { showToast('실제 납부 금액을 입력해 주세요.', 'error'); return; }
+  if (!uploadedFileData) { showToast('영수증을 첨부해 주세요.', 'error'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> 제출 중...';
+
+  const support = calcSupportAmount(actual);
+  const empName = currentUser.name.replace(/\s+/g, '');
+  const ext = uploadedFileData.type?.includes('pdf') ? 'pdf'
+             : uploadedFileData.type?.includes('png') ? 'png' : 'jpg';
+  const fileName = `${month}_${empName}.${ext}`;
+
+  // 영수증 Google Drive 업로드
+  let driveUrl = null;
+  let driveFileId = null;
+  if (APPS_SCRIPT_URL) {
+    try {
+      btn.innerHTML = '<div class="spinner"></div> 영수증 업로드 중...';
+      const base64Data = uploadedFileData.data.split(',')[1];
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'uploadReceipt',
+          fileName,
+          fileData: base64Data,
+          mimeType: uploadedFileData.type,
+          year: month.split('-')[0],
+          month: month
+        })
+      });
+      const json = await res.json();
+      if (json.success) {
+        driveUrl = json.url;
+        driveFileId = json.fileId;
+      } else {
+        console.warn('Drive upload failed:', json.error);
+      }
+    } catch(e) {
+      console.warn('Drive upload error:', e);
+    }
+  }
+
+  // Sheets에 저장할 데이터
+  const app = {
+    id: Date.now().toString(),
+    email: currentUser.email,
+    name: currentUser.name,
+    month, carrier,
+    actualAmount: actual,
+    supportAmount: support,
+    memo: memo || '',
+    appliedAt: new Date().toLocaleString('sv-SE', {timeZone:'Asia/Seoul'}).replace(' ','T'),
+    receiptFileName: fileName,
+    receiptDriveUrl: driveUrl || '',
+    receiptFileId: driveFileId || ''
+  };
+
+  // Sheets에 저장
+  btn.innerHTML = '<div class="spinner"></div> 저장 중...';
+  const result = await apiCall({ action: 'submitApp', ...app });
+
+  btn.disabled = false;
+  btn.innerHTML = '📤 신청 제출';
+
+  if (result?.success) {
+    // 로컬 캐시에도 추가
+    const cached = getCachedApps();
+    cached.push({
+      ...app,
+      status: '대기',
+      receiptData: driveUrl
+        ? { name: fileName, type: uploadedFileData.type, driveUrl, driveFileId, data: null }
+        : uploadedFileData
+    });
+    setCachedApps(cached);
+    showToast(driveUrl ? '✅ 신청 완료! 영수증이 Drive에 저장됐어요.' : '✅ 신청이 완료되었습니다!', 'success');
+    resetForm();
+    await checkAlreadyApplied();
+    loadSummary();
+    setTimeout(() => showTab('history'), 1000);
+  } else {
+    showToast('저장 중 오류가 발생했어요. 다시 시도해주세요.', 'error');
+  }
+}
+
+function resetForm() {
+  document.getElementById('carrier').value = '';
+  document.getElementById('actualAmount').value = '';
+  document.getElementById('memo').value = '';
+  removeFile();
+  updateAmountPreview();
+}
+
+// ── HISTORY ───────────────────────────────────────────────
+function initHistoryFilters() {
+  const now = new Date();
+  const yearSel  = document.getElementById('historyYearFilter');
+  const monthSel = document.getElementById('historyMonthFilter');
+  if (!yearSel || !monthSel) return;
+
+  yearSel.innerHTML = '<option value="">전체 연도</option>';
+  for (let y = now.getFullYear(); y >= now.getFullYear() - 3; y--) {
+    yearSel.innerHTML += `<option value="${y}" ${y === now.getFullYear() ? 'selected' : ''}>${y}년</option>`;
+  }
+
+  monthSel.innerHTML = '<option value="">전체 월</option>';
+  for (let m = 1; m <= 12; m++) {
+    const val = String(m).padStart(2, '0');
+    monthSel.innerHTML += `<option value="${val}" ${m === now.getMonth()+1 ? 'selected' : ''}>${m}월</option>`;
+  }
+}
+
+async function loadHistory() {
+  const yearFilter  = document.getElementById('historyYearFilter')?.value  || '';
+  const monthFilter = document.getElementById('historyMonthFilter')?.value || '';
+  const el = document.getElementById('historyContent');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
+
+  // Sheets에서 본인 신청 조회
+  const result = await apiGet({ action: 'getApps', email: currentUser.email });
+  let allMyApps = (result?.apps || []).map(a => ({...a, id: String(a.id)}));
+
+  // 캐시 업데이트
+  const cached = getCachedApps().filter(a => a.email !== currentUser.email);
+  setCachedApps([...cached, ...allMyApps]);
+
+  let apps = allMyApps;
+  function normalizeMonth(val) {
+    const s = String(val);
+    if (s.includes('T') || s.includes('/')) {
+      const d = new Date(s);
+      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    }
+    return s;
+  }
+  apps = apps.map(a => ({...a, month: normalizeMonth(a.month)}));
+  if (yearFilter)  apps = apps.filter(a => a.month.startsWith(yearFilter));
+  if (monthFilter) apps = apps.filter(a => a.month.endsWith('-' + monthFilter));
+  apps.sort((a, b) => b.month.localeCompare(a.month));
+
+  // 요약 칩
+  const summaryEl = document.getElementById('historySummary');
+  if (summaryEl) {
+    const allApps = getCachedApps().filter(a => a.email === currentUser.email);
+    const totalApproved = allApps.filter(a => a.status === '승인').reduce((s, a) => s + a.supportAmount, 0);
+    const thisYearApps  = yearFilter ? apps.filter(a => a.status === '승인') : allApps.filter(a => a.month.startsWith(new Date().getFullYear().toString()) && a.status === '승인');
+    const thisYearTotal = thisYearApps.reduce((s, a) => s + a.supportAmount, 0);
+    summaryEl.innerHTML = `
+      <div class="summary-chip" style="flex:none;">
+        <div class="label">조회 건수</div>
+        <div class="value accent">${apps.length}건</div>
+      </div>
+      <div class="summary-chip" style="flex:none;">
+        <div class="label">${yearFilter ? yearFilter + '년' : '올해'} 지급액</div>
+        <div class="value success">${thisYearTotal.toLocaleString()}원</div>
+      </div>
+      <div class="summary-chip" style="flex:none;">
+        <div class="label">누적 지급액</div>
+        <div class="value" style="font-size:16px;">${totalApproved.toLocaleString()}원</div>
+      </div>
+    `;
+  }
+
+  if (apps.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div>해당 기간에 신청 이력이 없습니다.</div>';
+    return;
+  }
+
+  el.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr>
+      <th>신청 월</th><th>통신사</th><th>납부 금액</th><th>지원 금액</th><th>상태</th><th>신청일</th><th></th>
+    </tr></thead>
+    <tbody>
+    ${apps.map(a => `
+      <tr>
+        <td class="mono">${a.month}</td>
+        <td>${a.carrier}</td>
+        <td class="mono">${a.actualAmount.toLocaleString()}원</td>
+        <td class="mono" style="color:var(--accent); font-weight:600;">${a.supportAmount.toLocaleString()}원</td>
+        <td>${statusBadge(a.status)}</td>
+        <td style="color:var(--text2); font-size:13px;">${formatDate(a.appliedAt)}</td>
+        <td style="white-space:nowrap;">
+          <button class="btn btn-secondary btn-sm" onclick="openDetail('${a.id}', false)" style="margin-right:4px;">상세</button>
+          ${a.status === '대기' ? `<button class="btn btn-danger btn-sm" onclick="handleDelete('${a.id}')">🗑️ 삭제</button>` : ''}
+        </td>
+      </tr>
+    `).join('')}
+    </tbody>
+  </table></div>`;
+}
+
+// ── ADMIN MGMT ────────────────────────────────────────────
+// 관리자 목록은 localStorage에 저장 (초기값은 코드의 ADMIN_EMAILS)
+// ── EMPLOYEE MGMT ─────────────────────────────────────────
+function getEmployees() {
+  try {
+    const saved = localStorage.getItem('tnk_employees');
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  // 초기값: 코드에 하드코딩된 직원 목록
+  return ALLOWED_EMAILS.map(email => ({ email, name: EMAIL_NAMES[email] || email.split('@')[0] }));
+}
+
+function saveEmployees(list) {
+  localStorage.setItem('tnk_employees', JSON.stringify(list));
+}
+
+function getEmployeeEmails() {
+  return getEmployees().map(e => e.email);
+}
+
+function getEmployeeName(email) {
+  const emp = getEmployees().find(e => e.email === email);
+  return emp ? emp.name : (EMAIL_NAMES[email] || email.split('@')[0]);
+}
+
+function addEmployee(email, name) {
+  const list = getEmployees();
+  if (list.find(e => e.email === email)) { showToast('이미 등록된 이메일이에요.', 'error'); return false; }
+  list.push({ email: email.trim().toLowerCase(), name: name.trim() });
+  saveEmployees(list);
+
+  // 기본 지원금액 설정 (한도 지정 / FIXED_AMOUNT)
+  const settings = getSalarySettings();
+  if (settings[email] === undefined) {
+    settings[email] = FIXED_AMOUNT;
+    saveSalarySettingsData(settings);
+  }
+
+  // 기본 직원 유형 설정 (직원)
+  const types = getEmployeeTypes();
+  if (types[email] === undefined) {
+    types[email] = '직원';
+    saveEmployeeTypes(types);
+  }
+
+  return true;
+}
+
+function removeEmployee(email) {
+  if (email === currentUser.email) { showToast('본인 계정은 삭제할 수 없어요.', 'error'); return; }
+  const list = getEmployees().filter(e => e.email !== email);
+  saveEmployees(list);
+  // 관리자 목록에서도 제거
+  const admins = getAdminEmails().filter(a => a !== email);
+  saveAdminEmails(admins);
+  loadAdminMgmt();
+  showToast('직원이 제거되었습니다.', 'success');
+}
+
+function getAdminEmails() {
+  try {
+    const saved = localStorage.getItem('tnk_admin_emails');
+    return saved ? JSON.parse(saved) : [...ADMIN_EMAILS];
+  } catch { return [...ADMIN_EMAILS]; }
+}
+
+function saveAdminEmails(emails) {
+  localStorage.setItem('tnk_admin_emails', JSON.stringify(emails));
+}
+
+function isAdmin(email) {
+  return getAdminEmails().includes(email);
+}
+
+function loadAdminMgmt() {
+  const el = document.getElementById('adminMgmtList');
+  if (!el) return;
+  const admins = getAdminEmails();
+  const employees = getEmployees();
+
+  el.innerHTML = `
+    <div style="margin-bottom:16px; font-size:13px; color:var(--text2);">
+      직원 추가/제거 및 관리자 권한을 관리할 수 있어요. 본인 계정은 변경 불가합니다.
+    </div>
+
+    <!-- 직원 추가 폼 -->
+    <div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
+      <input type="text" id="newEmpName" placeholder="이름 (예: KIM Minsu)" style="flex:1; min-width:120px;">
+      <input type="email" id="newEmpEmail" placeholder="이메일 (예: minsu@tnkorea.co.kr)" style="flex:2; min-width:180px;">
+      <button class="btn btn-primary btn-sm" onclick="submitAddEmployee()" style="white-space:nowrap;">+ 직원 추가</button>
+    </div>
+
+    <!-- 직원 목록 -->
+    <div style="display:flex; flex-direction:column; gap:10px;">
+    ${employees.map(emp => {
+      const { email, name } = emp;
+      const isAdm = admins.includes(email);
+      const isSelf = email === currentUser.email;
+      return `
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; gap:8px; flex-wrap:wrap;">
+          <div>
+            <div style="font-size:14px; font-weight:600;">${name}</div>
+            <div style="font-size:12px; color:var(--text2);">${email}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            ${isAdm ? '<span class="badge badge-approved">관리자</span>' : '<span class="badge" style="background:var(--surface); border:1px solid var(--border); color:var(--text3);">일반</span>'}
+            <button class="btn btn-sm ${isAdm ? 'btn-danger' : 'btn-secondary'}"
+              ${isSelf ? 'disabled' : ''}
+              onclick="toggleAdmin('${email}')">
+              ${isSelf ? '🔒' : isAdm ? '권한 제거' : '관리자 지정'}
+            </button>
+            <button class="btn btn-sm btn-danger"
+              ${isSelf ? 'disabled' : ''}
+              onclick="removeEmployee('${email}'); loadAdminMgmt();">
+              ${isSelf ? '' : '직원 삭제'}
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('')}
+    </div>
+  `;
+}
+
+function submitAddEmployee() {
+  const name  = document.getElementById('newEmpName')?.value.trim();
+  const email = document.getElementById('newEmpEmail')?.value.trim().toLowerCase();
+  if (!name)  { showToast('이름을 입력해 주세요.', 'error'); return; }
+  if (!email) { showToast('이메일을 입력해 주세요.', 'error'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('올바른 이메일 형식이 아니에요.', 'error'); return; }
+  if (addEmployee(email, name)) {
+    showToast(`✅ ${name} 직원이 추가되었습니다.`, 'success');
+    loadAdminMgmt();
+  }
+}
+
+function toggleAdmin(email) {
+  if (email === currentUser.email) return;
+  const admins = getAdminEmails();
+  const idx = admins.indexOf(email);
+  if (idx === -1) {
+    admins.push(email);
+    showToast(`✅ ${getEmployeeName(email)} 관리자로 지정했어요.`, 'success');
+  } else {
+    admins.splice(idx, 1);
+    showToast(`${getEmployeeName(email)} 관리자 권한을 제거했어요.`, 'error');
+  }
+  saveAdminEmails(admins);
+  loadAdminMgmt();
+  loadAdminList();
+}
+
+// ── ADMIN ─────────────────────────────────────────────────
+let adminViewMode = 'month'; // 'month' | 'year'
+
+function setViewMode(mode) {
+  adminViewMode = mode;
+  const btns = {
+    month: document.getElementById('viewModeMonth'),
+    year:  document.getElementById('viewModeYear'),
+    dept:  document.getElementById('viewModeDept'),
+    emp:   document.getElementById('viewModeEmp')
+  };
+  // 버튼 스타일 초기화
+  Object.entries(btns).forEach(([k, btn]) => {
+    if (!btn) return;
+    btn.style.background = (k === mode) ? 'var(--accent)' : '';
+    btn.style.color      = (k === mode) ? 'white' : '';
+  });
+  // 월 필터: 월별 모드만 표시
+  const monthSel = document.getElementById('adminMonthFilter');
+  if (monthSel) monthSel.style.display = (mode === 'month') ? '' : 'none';
+  // 직원 필터: 직원별 모드만 표시
+  const empSel = document.getElementById('adminEmpFilter');
+  if (empSel) {
+    empSel.style.display = (mode === 'emp') ? '' : 'none';
+    if (mode === 'emp') {
+      empSel.innerHTML = '<option value="">전체 직원</option>';
+      getEmployees().forEach(e => {
+        empSel.innerHTML += `<option value="${e.email}">${e.name}</option>`;
+      });
+    }
+  }
+  loadAdminList();
+}
+
+function initAdminMonthFilter() {
+  const now = new Date();
+  const yearSel  = document.getElementById('adminYearFilter');
+  const monthSel = document.getElementById('adminMonthFilter');
+  if (!yearSel || !monthSel) return;
+
+  // 연도 필터
+  yearSel.innerHTML = '<option value="">전체 연도</option>';
+  for (let y = now.getFullYear(); y >= now.getFullYear() - 3; y--) {
+    yearSel.innerHTML += `<option value="${y}">${y}년</option>`;
+  }
+  yearSel.value = now.getFullYear(); // 기본값: 올해
+
+  // 월 필터
+  monthSel.innerHTML = '<option value="">전체 월</option>';
+  for (let m = 1; m <= 12; m++) {
+    monthSel.innerHTML += `<option value="${String(m).padStart(2,'0')}">${m}월</option>`;
+  }
+  monthSel.value = String(now.getMonth() + 1).padStart(2, '0'); // 기본값: 이번 달
+}
+
+async function loadAdminList() {
+  if (!getAdminEmails().includes(currentUser?.email)) return;
+
+  const yearFilter  = document.getElementById('adminYearFilter')?.value  || '';
+  const monthFilter = document.getElementById('adminMonthFilter')?.value || '';
+  const el = document.getElementById('adminContent');
+  if (el) el.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
+
+  // Sheets에서 전체 조회
+  const result = await apiGet({ action: 'getApps', email: 'ALL' });
+  let apps = result?.apps || [];
+  setCachedApps(apps);
+
+  // month 정규화 (Sheets에서 날짜형으로 올 경우)
+  apps = apps.map(a => ({...a,
+    month: (() => { const s=String(a.month); if(s.includes('T')||s.includes('/')){const d=new Date(s);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}return s; })(),
+    status: String(a.status||'대기'),
+    name: String(a.name||''),
+    email: String(a.email||''),
+    actualAmount: Number(a.actualAmount||0),
+    supportAmount: Number(a.supportAmount||0)
+  }));
+  // 연도 필터
+  if (yearFilter) apps = apps.filter(a => a.month.startsWith(yearFilter));
+  // 월 필터 (월별 모드일 때만)
+  if (adminViewMode === 'month' && monthFilter) {
+    apps = apps.filter(a => a.month.endsWith('-' + monthFilter));
+  }
+
+  apps.sort((a, b) => {
+    const monthDiff = b.month.localeCompare(a.month); // 최신 월 먼저
+    if (monthDiff !== 0) return monthDiff;
+    return (a.name || '').localeCompare(b.name || '', 'ko'); // 같은 월이면 이름 가나다순
+  });
+
+  // Stats
+  document.getElementById('adminPending').textContent  = apps.filter(a=>a.status==='대기').length;
+  document.getElementById('adminApproved').textContent = apps.filter(a=>a.status==='승인').length;
+  document.getElementById('adminRejected').textContent = apps.filter(a=>a.status==='반려').length;
+  const totalSupport = apps.filter(a=>a.status==='승인').reduce((s,a)=>s+a.supportAmount,0);
+  document.getElementById('adminTotal').textContent = totalSupport.toLocaleString() + '원';
+
+  if (apps.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div>신청 내역이 없습니다.</div>';
+    return;
+  }
+
+  // ── 직원별 필터 적용 ──
+  const empFilter = document.getElementById('adminEmpFilter')?.value || '';
+  if (adminViewMode === 'emp' && empFilter) {
+    apps = apps.filter(a => a.email === empFilter);
+  }
+
+  // ── 공통 상세 테이블 렌더 함수 ──
+  function detailTable(rows) {
+    if (rows.length === 0) return '<div class="empty-state"><div class="empty-icon">📭</div>신청 내역이 없습니다.</div>';
+    return `<div class="table-wrap"><table>
+      <thead><tr>
+        <th>신청자</th><th>부서</th><th>신청 월</th><th>통신사</th><th>납부금액</th><th>지원금액</th><th>상태</th><th>신청일</th><th>검토</th><th>삭제</th>
+      </tr></thead>
+      <tbody>
+      ${rows.map(a => `
+        <tr>
+          <td style="font-weight:500;">${a.name}</td>
+          <td style="font-size:12px; color:var(--text2);">${getDeptByEmail(a.email)}</td>
+          <td class="mono">${a.month}</td>
+          <td>${a.carrier}</td>
+          <td class="mono">${a.actualAmount.toLocaleString()}원</td>
+          <td class="mono" style="color:var(--accent); font-weight:600;">${a.supportAmount.toLocaleString()}원</td>
+          <td>${statusBadge(a.status)}</td>
+          <td style="color:var(--text2); font-size:12px;">${formatDate(a.appliedAt)}</td>
+          <td><button class="btn btn-secondary btn-sm" onclick="openDetail('${a.id}', true)">검토</button></td>
+          <td><button class="btn btn-danger btn-sm" onclick="handleDelete('${a.id}', true)">🗑️ 삭제</button></td>
+        </tr>
+      `).join('')}
+      </tbody>
+    </table></div>`;
+  }
+
+  if (adminViewMode === 'year') {
+    // ── 연도별 뷰: 직원 × 월 요약 ──
+    const year = yearFilter || new Date().getFullYear().toString();
+    const months = Array.from({length:12}, (_,i) => `${year}-${String(i+1).padStart(2,'0')}`);
+    const employees = getEmployeeEmails();
+    el.innerHTML = `<div class="table-wrap"><table>
+      <thead><tr>
+        <th>직원</th><th>부서</th>
+        ${months.map(m => `<th style="font-size:11px;">${parseInt(m.split('-')[1])}월</th>`).join('')}
+        <th>합계</th>
+      </tr></thead>
+      <tbody>
+      ${employees.map(email => {
+        const name = getEmployeeName(email);
+        const dept = getDeptByEmail(email);
+        let total = 0;
+        const cells = months.map(m => {
+          const app = apps.find(a => a.email === email && a.month === m);
+          if (!app) return `<td style="color:var(--text3); font-size:12px; text-align:center;">-</td>`;
+          if (app.status === '승인') { total += app.supportAmount; return `<td style="text-align:center;"><span class="badge badge-approved" style="font-size:11px; cursor:pointer;" onclick="openDetail('${app.id}',true)">${app.supportAmount.toLocaleString()}</span></td>`; }
+          if (app.status === '대기') return `<td style="text-align:center;"><span class="badge badge-pending" style="font-size:11px; cursor:pointer;" onclick="openDetail('${app.id}',true)">대기</span></td>`;
+          return `<td style="text-align:center;"><span class="badge badge-rejected" style="font-size:11px; cursor:pointer;" onclick="openDetail('${app.id}',true)">반려</span></td>`;
+        });
+        return `<tr>
+          <td style="font-weight:500; white-space:nowrap;">${name}</td>
+          <td style="font-size:12px; color:var(--text2); white-space:nowrap;">${dept}</td>
+          ${cells.join('')}
+          <td class="mono" style="font-weight:700; color:var(--accent); text-align:right;">${total.toLocaleString()}원</td>
+        </tr>`;
+      }).join('')}
+      </tbody>
+    </table></div>`;
+
+  } else if (adminViewMode === 'dept') {
+    // ── 부서별 뷰: 부서로 묶어서 표시 ──
+    let html = '';
+    for (const [deptName, emails] of Object.entries(DEPARTMENTS)) {
+      const deptApps = apps.filter(a => emails.includes(a.email));
+      if (deptApps.length === 0) continue;
+      const deptTotal = deptApps.filter(a => a.status === '승인').reduce((s,a) => s + a.supportAmount, 0);
+      html += `
+        <div style="margin-bottom:24px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+            <div style="font-size:14px; font-weight:600; color:var(--text);">🏢 ${deptName}</div>
+            <div style="font-size:13px; color:var(--accent); font-weight:600;">승인 합계: ${deptTotal.toLocaleString()}원</div>
+          </div>
+          ${detailTable(deptApps)}
+        </div>`;
+    }
+    el.innerHTML = html || '<div class="empty-state"><div class="empty-icon">📭</div>신청 내역이 없습니다.</div>';
+
+  } else {
+    // ── 월별 / 직원별 뷰: 상세 테이블 ──
+    el.innerHTML = detailTable(apps);
+  }
+}
+
+// ── 버튼 클릭 래퍼 (async 함수 onclick 호환) ─────────────
+function handleApprove(id) { 
+  approveApp(id).catch(e => console.error(e)); 
+  return false;
+}
+function handleDelete(id, adminForce) { 
+  deleteApp(id, adminForce).catch(e => console.error(e)); 
+  return false;
+}
+function handleConfirmDelete(id) { 
+  confirmDeleteApp(id); 
+  return false;
+}
+function handleToggleReject(id) { 
+  toggleRejectReason(id); 
+  return false;
+}
+
+// ── DETAIL MODAL ──────────────────────────────────────────
+function openDetail(id, isAdmin) {
+  const apps = getCachedApps();
+  const app = apps.find(a => String(a.id) === String(id));
+  if (!app) {
+    showToast('데이터를 찾을 수 없어요. 새로고침 후 다시 시도해주세요.', 'error');
+    return;
+  }
+
+  const body = document.getElementById('modalBody');
+  const actions = document.getElementById('modalActions');
+
+  body.innerHTML = `
+    <div class="detail-row"><span class="detail-label">신청자</span><span class="detail-value">${app.name}</span></div>
+    <div class="detail-row"><span class="detail-label">이메일</span><span class="detail-value" style="font-size:13px;">${app.email}</span></div>
+    <div class="detail-row"><span class="detail-label">신청 월</span><span class="detail-value mono">${app.month}</span></div>
+    <div class="detail-row"><span class="detail-label">통신사</span><span class="detail-value">${app.carrier}</span></div>
+    <div class="detail-row"><span class="detail-label">실제 납부금액</span><span class="detail-value mono">${app.actualAmount.toLocaleString()}원</span></div>
+    <div class="detail-row"><span class="detail-label">지원 예정 금액</span><span class="detail-value mono" style="color:var(--accent); font-weight:700;">${app.supportAmount.toLocaleString()}원</span></div>
+    <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value">${statusBadge(app.status)}</span></div>
+    <div class="detail-row"><span class="detail-label">신청일</span><span class="detail-value">${formatDate(app.appliedAt)}</span></div>
+    ${app.memo ? `<div class="detail-row"><span class="detail-label">메모</span><span class="detail-value">${app.memo}</span></div>` : ''}
+    ${app.rejectReason ? `<div class="detail-row"><span class="detail-label">반려 사유</span><span class="detail-value" style="color:var(--danger);">${app.rejectReason}</span></div>` : ''}
+    ${(app.receiptData?.driveUrl || app.receiptDriveUrl) ? `
+      <div style="margin-top:16px;">
+        <div style="font-size:13px; color:var(--text2); margin-bottom:8px;">📎 첨부 영수증</div>
+        <a href="${app.receiptData?.driveUrl || app.receiptDriveUrl}" target="_blank" class="btn btn-secondary" style="display:inline-flex; gap:6px; text-decoration:none;">📂 Google Drive에서 보기</a>
+      </div>
+    ` : app.receiptData?.data ? `
+      <div style="margin-top:16px;">
+        <div style="font-size:13px; color:var(--text2); margin-bottom:8px;">📎 첨부 영수증</div>
+        ${app.receiptData.type?.startsWith('image/')
+          ? `<img src="${app.receiptData.data}" class="receipt-img" alt="영수증">`
+          : `<a href="${app.receiptData.data}" download="${app.receiptData.name}" class="btn btn-secondary" style="display:inline-flex; gap:6px; text-decoration:none;">📄 ${app.receiptData.name} 다운로드</a>`
+        }
+      </div>
+    ` : ''}
+    <div class="reason-area" id="reasonArea">
+      <textarea id="rejectReasonInput" placeholder="반려 사유를 입력해 주세요" style="margin-top:12px;"></textarea>
+    </div>
+  `;
+
+  if (isAdmin) {
+    let btns = '';
+    if (app.status === '대기') {
+      btns = `
+        <button class="btn btn-success" onclick="handleApprove('${id}')">✅ 승인</button>
+        <button class="btn btn-danger" onclick="handleToggleReject('${id}')">❌ 반려</button>
+      `;
+    }
+    btns += `<button class="btn btn-secondary" onclick="handleConfirmDelete('${id}')">🗑️ 삭제</button>`;
+    actions.innerHTML = btns;
+  } else if (app.status === '대기') {
+    actions.innerHTML = `
+      <button class="btn btn-danger" onclick="handleConfirmDelete('${id}')">🗑️ 신청 취소</button>
+    `;
+  } else {
+    actions.innerHTML = '';
+  }
+
+  document.getElementById('detailModal').style.display = 'flex';
+}
+
+let pendingRejectId = null;
+function toggleRejectReason(id) {
+  const area = document.getElementById('reasonArea');
+  pendingRejectId = id;
+  if (area.classList.contains('visible')) {
+    const reason = document.getElementById('rejectReasonInput').value.trim();
+    if (!reason) { showToast('반려 사유를 입력해 주세요.', 'error'); return; }
+    rejectApp(id, reason);
+  } else {
+    area.classList.add('visible');
+    document.querySelector(`[onclick="handleToggleReject('${id}')"]`).textContent = '반려 확인';
+  }
+}
+
+async function deleteApp(id, adminForce) {
+  const isAdminUser = getAdminEmails().includes(currentUser.email);
+  const apps = getCachedApps();
+  const app = apps.find(a => String(a.id) === String(id));
+  if (!app) {
+    showToast('데이터를 찾을 수 없어요. 새로고침 후 다시 시도해주세요.', 'error');
+    return;
+  }
+  if (!isAdminUser && String(app.status) !== '대기') {
+    showToast('승인된 신청은 삭제할 수 없어요.', 'error'); return;
+  }
+  const msg = isAdminUser && String(app.status) === '승인'
+    ? `⚠️ 승인된 신청을 삭제하시겠어요?\n(${getEmployeeName(app.email)} / ${app.month} / ${Number(app.supportAmount).toLocaleString()}원)`
+    : '이 신청을 삭제하시겠어요?';
+  if (!confirm(msg)) return;
+
+  const result = await apiCall({ action: 'deleteApp', id: Number(id) || id });
+  if (result?.success) {
+    const filtered = apps.filter(a => String(a.id) !== String(id));
+    setCachedApps(filtered);
+    showToast('🗑️ 신청이 삭제되었습니다.', 'success');
+    document.getElementById('detailModal').style.display = 'none';
+    loadHistory();
+    loadSummary();
+    checkAlreadyApplied();
+    if (isAdminUser) loadAdminList();
+  } else {
+    showToast('삭제 실패: ' + (result?.error || '오류'), 'error');
+  }
+}
+
+function confirmDeleteApp(id) {
+  document.getElementById('detailModal').style.display = 'none';
+  setTimeout(() => deleteApp(id), 0);
+}
+
+async function approveApp(id) {
+  const result = await apiCall({ action: 'updateStatus', id: Number(id) || id, status: '승인' });
+  if (result?.success) {
+    showToast('✅ 승인 완료', 'success');
+    document.getElementById('detailModal').style.display = 'none';
+    loadAdminList();
+  } else {
+    showToast('승인 실패: ' + (result?.error || '오류'), 'error');
+  }
+}
+
+async function rejectApp(id, reason) {
+  const result = await apiCall({ action: 'updateStatus', id: Number(id) || id, status: '반려', rejectReason: reason });
+  if (result?.success) {
+    showToast('반려 처리되었습니다.', 'success');
+    document.getElementById('detailModal').style.display = 'none';
+    loadAdminList();
+  } else {
+    showToast('반려 실패: ' + (result?.error || '오류'), 'error');
+  }
+}
+
+function updateAppStatus(id, status, reason) {
+  const apps = getCachedApps();
+  const idx = apps.findIndex(a => String(a.id) === String(id));
+  if (idx === -1) return;
+  apps[idx].status = status;
+  apps[idx].approvedAt = new Date().toLocaleString('sv-SE', {timeZone:'Asia/Seoul'}).replace(' ','T');
+  if (reason) apps[idx].rejectReason = reason;
+  setCachedApps(apps);
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('detailModal')) {
+    document.getElementById('detailModal').style.display = 'none';
+  }
+}
+
+// ── TABS ──────────────────────────────────────────────────
+function showTab(name) {
+  ['apply', 'history', 'support', 'admin'].forEach(t => {
+    const content = document.getElementById(`tabContent-${t}`);
+    const btn = document.getElementById(`tab-${t}`);
+    if (content) content.style.display = t === name ? 'block' : 'none';
+    if (btn) btn.classList.toggle('active', t === name);
+  });
+
+  if (name === 'history') { initHistoryFilters(); loadHistory(); }
+  if (name === 'admin') { loadAdminList(); loadAdminMgmt(); initReceiptYearFilter(); loadSalarySettingList(); }
+  if (name === 'apply') { loadSummary(); checkAlreadyApplied(); }
+  if (name === 'support') renderSupportTab();
+}
+
+// ── SUPPORT TAB ──────────────────────────────────────────
+// 기본 지원사항 항목
+// 직원 유형별 기본 지원사항
+const DEFAULT_SUPPORT_GROUPS = {
+  '직원': [
+    { label: '대상',         value: '일반 직원' },
+    { label: '지원 한도',    value: '월 최대 50,000원' },
+    { label: '5만원 이하 시', value: '실제 사용금액 전액 지원' },
+    { label: '5만원 초과 시', value: '최대 50,000원만 지원' },
+    { label: '지원 조건',    value: '통신비 청구서 (영수증) 첨부 필수' },
+    { label: '신청 방법',    value: '매월 신청하기 탭에서 해당 월 신청' },
+    { label: '지급 시기',    value: '관리자 승인 후 지급' }
+  ],
+  '임원': [
+    { label: '대상',         value: '임원' },
+    { label: '지원 방식',    value: '실제 사용금액 전액 지원' },
+    { label: '지원 한도',    value: '한도 없음 — 납부한 통신비 전액' },
+    { label: '지원 조건',    value: '통신비 청구서 (영수증) 첨부 필수' },
+    { label: '신청 방법',    value: '매월 신청하기 탭에서 해당 월 신청' },
+    { label: '지급 시기',    value: '관리자 승인 후 지급' }
+  ],
+  '기타': [
+    { label: '대상',         value: '계약직 · 파견 · 기타' },
+    { label: '지원 한도',    value: '별도 협의 (담당자 문의)' },
+    { label: '지원 조건',    value: '통신비 청구서 (영수증) 첨부 필수' },
+    { label: '신청 방법',    value: '매월 신청하기 탭에서 해당 월 신청' },
+    { label: '지급 시기',    value: '관리자 승인 후 지급' }
+  ]
+};
+
+// 직원별 유형 저장 (email → '직원'|'임원'|'기타')
+function getEmployeeTypes() {
+  try {
+    const saved = localStorage.getItem('tnk_employee_types');
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  // 기본값: 전액지원 대상→임원, 나머지→직원
+  const types = {};
+  ALLOWED_EMAILS.forEach(email => {
+    types[email] = FULL_AMOUNT_EMAILS.includes(email) ? '임원' : '직원';
+  });
+  return types;
+}
+
+function saveEmployeeTypes(types) {
+  localStorage.setItem('tnk_employee_types', JSON.stringify(types));
+}
+
+function getMyEmployeeType() {
+  const types = getEmployeeTypes();
+  return types[currentUser?.email] || '직원';
+}
+
+function getSupportGroups() {
+  try {
+    const saved = localStorage.getItem('tnk_support_groups');
+    return saved ? JSON.parse(saved) : DEFAULT_SUPPORT_GROUPS;
+  } catch { return DEFAULT_SUPPORT_GROUPS; }
+}
+
+function saveSupportGroups(groups) {
+  localStorage.setItem('tnk_support_groups', JSON.stringify(groups));
+}
+
+// 하위 호환 - 기존 getSupportItems/saveSupportItems 는 현재 직원 유형 기준
+function getSupportItems() {
+  const groups = getSupportGroups();
+  const type = getMyEmployeeType();
+  return groups[type] || groups['직원'] || DEFAULT_SUPPORT_GROUPS['직원'];
+}
+
+function saveSupportItems(items) {
+  // 현재 편집 중인 그룹에 저장 (showSupportEditor 에서 activeGroup 사용)
+  const groups = getSupportGroups();
+  groups[window._editingGroup || '직원'] = items;
+  saveSupportGroups(groups);
+}
+
+function renderSupportTab(activeGroup) {
+  const el = document.getElementById('supportTabContent');
+  if (!el || !currentUser) return;
+  const isAdminUser = getAdminEmails().includes(currentUser.email);
+  const groups = getSupportGroups();
+  const groupNames = ['직원', '임원', '기타'];
+
+  // 유형별 색상 정의
+  const typeStyle = {
+    '직원': { color: 'var(--accent)',   bg: 'rgba(106,143,216,0.08)', border: 'rgba(106,143,216,0.25)', badge: '👤' },
+    '임원': { color: 'var(--success)',  bg: 'rgba(74,171,130,0.08)',  border: 'rgba(74,171,130,0.25)',  badge: '⭐' },
+    '기타': { color: 'var(--warning)',  bg: 'rgba(212,144,10,0.08)',  border: 'rgba(212,144,10,0.25)',  badge: '📋' }
+  };
+
+  if (isAdminUser) {
+    const cur = activeGroup || groupNames[0];
+    const items = groups[cur] || [];
+    const ts = typeStyle[cur] || typeStyle['직원'];
+    // 해당 유형 직원 수 계산
+    const empTypes = getEmployeeTypes();
+    const count = getEmployees().filter(e => (empTypes[e.email] || '직원') === cur).length;
+
+    el.innerHTML = `
+      <div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
+        ${groupNames.map(g => {
+          const ts2 = typeStyle[g] || typeStyle['직원'];
+          const cnt = getEmployees().filter(e => (empTypes[e.email]||'직원') === g).length;
+          const isActive = g === cur;
+          return `<button onclick="renderSupportTab('${g}')"
+            style="padding:8px 18px; border-radius:20px; border:1.5px solid ${isActive ? ts2.color : 'var(--border)'};
+                   background:${isActive ? ts2.bg : 'transparent'}; color:${isActive ? ts2.color : 'var(--text2)'};
+                   font-size:13px; font-weight:${isActive?'600':'400'}; cursor:pointer; transition:all .2s;">
+            ${ts2.badge} ${g} <span style="font-size:11px; opacity:0.7;">(${cnt}명)</span>
+          </button>`;
+        }).join('')}
+      </div>
+
+      <div style="background:${ts.bg}; border:1px solid ${ts.border}; border-radius:12px; padding:4px 0 4px; margin-bottom:20px;">
+        <table style="width:100%; border-collapse:collapse; font-size:14px; line-height:1.9;">
+          ${items.map((item, i) => `
+            <tr style="${i < items.length-1 ? 'border-bottom:1px solid ' + ts.border : ''}">
+              <td style="padding:13px 20px; color:var(--text2); width:140px; font-weight:500;">${item.label}</td>
+              <td style="padding:13px 20px; color:var(--text); font-weight:${item.label==='대상'||item.label==='지원 한도'||item.label==='지원 방식'?'600':'400'};">${item.value}</td>
+            </tr>
+          `).join('')}
+        </table>
+      </div>
+
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-secondary btn-sm" onclick="showSupportEditor('${cur}')">✏️ ${cur} 내용 수정</button>
+        <button class="btn btn-secondary btn-sm" onclick="resetSupportGroup('${cur}')">↩️ 기본값 초기화</button>
+      </div>
+    `;
+  } else {
+    // 일반 직원: 본인 유형만 표시
+    const myType = getMyEmployeeType();
+    const items = groups[myType] || groups['직원'] || [];
+    const limit = getEmployeeLimit(currentUser.email);
+    const limitText = limit === null ? '전액 (한도 없음)' : limit.toLocaleString() + '원';
+    const processedItems = items.map(item => ({
+      label: item.label,
+      value: item.value
+        .replace('{지원한도}', limitText)
+        .replace('{전액여부}', limit === null ? '실제 사용금액 전액 지원' : limitText + ' 한도 지원')
+    }));
+    const myTs = typeStyle[myType] || typeStyle['직원'];
+    el.innerHTML = `
+      <div style="background:${myTs.bg}; border:1px solid ${myTs.border}; border-radius:12px; padding:4px 0 4px;">
+        <table style="width:100%; border-collapse:collapse; font-size:14px; line-height:1.9;">
+          ${processedItems.map((item, i) => `
+            <tr style="${i < processedItems.length-1 ? 'border-bottom:1px solid ' + myTs.border : ''}">
+              <td style="padding:13px 20px; color:var(--text2); width:140px; font-weight:500;">${item.label}</td>
+              <td style="padding:13px 20px; color:var(--text); font-weight:${item.label==='대상'||item.label==='지원 한도'||item.label==='지원 방식'?'600':'400'};">${item.value}</td>
+            </tr>
+          `).join('')}
+        </table>
+      </div>
+    `;
+  }
+}
+
+function showSupportEditor(group) {
+  const el = document.getElementById('supportTabContent');
+  window._editingGroup = group || '직원';
+  const groups = getSupportGroups();
+  const items = groups[window._editingGroup] || [];
+
+  el.innerHTML = `
+    <div style="font-size:13px; color:var(--text2); margin-bottom:16px;">항목을 수정하고 저장하세요. 행 추가/삭제도 가능해요.</div>
+    <div id="supportEditorRows" style="display:flex; flex-direction:column; gap:10px;">
+      ${items.map((item, i) => `
+        <div style="display:flex; gap:8px; align-items:center;" id="supportRow_${i}">
+          <input type="text" value="${item.label}" placeholder="항목명" style="width:140px; flex-shrink:0;" id="supportLabel_${i}">
+          <input type="text" value="${item.value}" placeholder="내용" style="flex:1;" id="supportValue_${i}">
+          <button class="btn btn-sm btn-danger" onclick="removeSupportRow(${i})" style="flex-shrink:0;">✕</button>
+        </div>
+      `).join('')}
+    </div>
+    <div style="margin-top:12px;">
+      <button class="btn btn-secondary btn-sm" onclick="addSupportRow()">+ 항목 추가</button>
+    </div>
+    <div style="margin-top:20px; display:flex; gap:8px; padding-top:16px; border-top:1px solid var(--border);">
+      <button class="btn btn-primary" onclick="saveSupportEditor()">💾 저장</button>
+      <button class="btn btn-secondary" onclick="renderSupportTab(window._editingGroup)">취소</button>
+    </div>
+  `;
+}
+
+function addSupportRow() {
+  const container = document.getElementById('supportEditorRows');
+  const idx = container.children.length;
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex; gap:8px; align-items:center;';
+  div.id = `supportRow_${idx}`;
+  div.innerHTML = `
+    <input type="text" placeholder="항목명" style="width:140px; flex-shrink:0;" id="supportLabel_${idx}">
+    <input type="text" placeholder="내용" style="flex:1;" id="supportValue_${idx}">
+    <button class="btn btn-sm btn-danger" onclick="this.parentElement.remove()" style="flex-shrink:0;">✕</button>
+  `;
+  container.appendChild(div);
+}
+
+function removeSupportRow(i) {
+  const row = document.getElementById(`supportRow_${i}`);
+  if (row) row.remove();
+}
+
+function saveSupportEditor() {
+  const container = document.getElementById('supportEditorRows');
+  const rows = container.querySelectorAll('div[id^="supportRow"]');
+  const items = [];
+  rows.forEach((row, i) => {
+    const inputs = row.querySelectorAll('input');
+    const label = inputs[0]?.value.trim();
+    const value = inputs[1]?.value.trim();
+    if (label && value) items.push({ label, value });
+  });
+  if (items.length === 0) { showToast('항목을 1개 이상 입력해주세요.', 'error'); return; }
+  saveSupportItems(items);
+  showToast('✅ 지원사항이 저장됐어요!', 'success');
+  renderSupportTab(window._editingGroup);
+}
+
+function resetSupportItems() {
+  resetSupportGroup('직원');
+}
+
+function resetSupportGroup(group) {
+  if (!confirm(`${group} 항목을 기본값으로 초기화하시겠어요?`)) return;
+  const groups = getSupportGroups();
+  groups[group] = JSON.parse(JSON.stringify(DEFAULT_SUPPORT_GROUPS[group] || []));
+  saveSupportGroups(groups);
+  showToast(`${group} 항목이 초기화됐어요.`, 'success');
+  renderSupportTab(group);
+}
+
+// ── RECEIPT DOWNLOAD ─────────────────────────────────────
+function initReceiptYearFilter() {
+  const sel = document.getElementById('receiptYearSel');
+  if (!sel) return;
+  const now = new Date();
+  sel.innerHTML = '';
+  for (let y = now.getFullYear(); y >= now.getFullYear() - 3; y--) {
+    sel.innerHTML += `<option value="${y}">${y}년</option>`;
+  }
+}
+
+async function downloadReceiptsZip() {
+  const year  = document.getElementById('receiptYearSel')?.value;
+  const month = document.getElementById('receiptMonthSel')?.value;
+  const isMonthly = !!month;
+  const label = isMonthly ? `${year}-${month}` : `${year}`;
+
+  const apps = getCachedApps().filter(a => {
+    if (a.status !== '승인') return false;
+    if (!a.receiptData) return false;
+    if (isMonthly) return a.month === `${year}-${month}`;
+    return a.month.startsWith(year);
+  });
+
+  if (apps.length === 0) {
+    showToast('해당 기간에 승인된 영수증이 없어요.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('receiptDownloadBtn');
+  const status = document.getElementById('receiptDownloadStatus');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> 준비 중...';
+  status.style.display = 'block';
+  status.textContent = `영수증 ${apps.length}건 압축 중...`;
+
+  try {
+    const zip = new JSZip();
+    const folder = zip.folder(isMonthly ? `통신비영수증_${label}` : `통신비영수증_${year}년`);
+
+    // 월별 폴더로 묶기 (연도별 다운로드 시)
+    const grouped = {};
+    apps.forEach(a => {
+      const key = isMonthly ? label : a.month;
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(a);
+    });
+
+    for (const [period, list] of Object.entries(grouped)) {
+      const subFolder = isMonthly ? folder : folder.folder(period);
+      list.forEach(a => {
+        const receipt = a.receiptData;
+        const ext = receipt.type?.includes('pdf') ? 'pdf'
+                  : receipt.type?.includes('png') ? 'png' : 'jpg';
+        const empName = (getEmployeeName(a.email) || a.name).replace(/\s+/g, '');
+        const fileName = `${period}_${empName}.${ext}`;
+        // base64 data URL → binary
+        const base64 = receipt.data.split(',')[1];
+        subFolder.file(fileName, base64, { base64: true });
+      });
+    }
+
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `통신비영수증_${label}.zip`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    status.textContent = `✅ ${apps.length}건 다운로드 완료!`;
+    showToast(`📦 ${apps.length}건 ZIP 다운로드 완료!`, 'success');
+  } catch(e) {
+    status.textContent = '오류가 발생했어요. 다시 시도해 주세요.';
+    showToast('다운로드 중 오류가 발생했어요.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '📥 ZIP 다운로드';
+  }
+}
+
+// ── UTILS ─────────────────────────────────────────────────
+function statusBadge(status) {
+  if (status === '대기') return '<span class="badge badge-pending">검토 중</span>';
+  if (status === '승인') return '<span class="badge badge-approved">승인 완료</span>';
+  return '<span class="badge badge-rejected">반려</span>';
+}
+
+function formatDate(iso) {
+  if (!iso) return '-';
+  const d = new Date(iso);
+  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── GOOGLE SHEETS (optional) ──────────────────────────────
+async function saveToSheets(app) {
+  if (!APPS_SCRIPT_URL) return;
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'addRow',
+        sheetName: SHEET_NAME,
+        data: [
+          app.id, app.name, app.email, app.month, app.carrier,
+          app.actualAmount, app.supportAmount, app.status,
+          app.appliedAt, app.memo || '',
+          app.receiptData?.driveUrl || ''
+        ]
+      })
+    });
+  } catch(e) { console.log('Sheets sync skipped:', e); }
+}
+
+// ── INIT ──────────────────────────────────────────────────
+window.onload = () => {
+  // 구버전 localStorage 데이터 자동 삭제 (Sheets 전환 후 1회)
+  const migrated = localStorage.getItem('tnk_sheets_migrated');
+  if (!migrated) {
+    localStorage.removeItem('tnk_telecom_apps');
+    localStorage.removeItem('tnk_telecom_cache');
+    localStorage.setItem('tnk_sheets_migrated', '1');
+  }
+  initGoogleAuth();
+  initLogo();
+};
+
+// Handle Google Identity Services load
+window.addEventListener('load', () => {
+  if (window.google?.accounts?.id) {
+    // Ready
+  }
+});
+</script>
+</body>
+</html>
