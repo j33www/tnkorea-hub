@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TNKorea 업무 시스템</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #f0ede8;
+    color: #2d2a24;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  header {
+    background: #fff;
+    border-bottom: 1px solid #e2ddd4;
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo { display:flex; align-items:center; gap:8px; }
+  .logo-icon { font-size: 20px; }
+  .logo-text { font-size: 15px; font-weight: 700; color: #2d2a24; letter-spacing: -0.3px; }
+
+  #editToggleBtn {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.18s;
+    background: #f0ede8;
+    color: #6b6560;
+  }
+  #editToggleBtn:hover { background: #e2ddd4; }
+  #editToggleBtn.active { background: #2d2a24; color: #fff; }
+
+  /* ── Main ── */
+  main {
+    flex: 1;
+    padding: 36px 24px;
+    max-width: 680px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .section { margin-bottom: 40px; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9e9488;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    padding-left: 2px;
+    flex: 1;
+  }
+  .section-title-input {
+    display: none;
+    font-family:inherit;
+    font-size:11px; font-weight:700;
+    color:#6366f1; letter-spacing:2px;
+    border:none; border-bottom:2px solid #6366f1;
+    background:transparent; outline:none; padding:2px 4px;
+    flex: 1;
+  }
+  .section-title-input.visible { display:block; }
+  .section-del-btn {
+    display:none; background:none; border:none; cursor:pointer;
+    font-size:16px; color:#f43f5e; opacity:0.5; padding:2px 6px;
+    transition: opacity 0.15s;
+  }
+  .section-del-btn:hover { opacity:1; }
+  .section-del-btn.visible { display:block; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  /* ── Card ── */
+  .app-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 20px 18px 18px;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    border: 1.5px solid transparent;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .app-card.clickable:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.11);
+  }
+  .app-card.clickable:active { transform: scale(0.97); }
+  .app-card.disabled { cursor: not-allowed; opacity: 0.72; }
+  .app-card.editable { cursor: pointer; border-color: transparent; }
+  .app-card.editable:hover { border-color: #6366f1; box-shadow: 0 4px 16px rgba(99,102,241,0.12); }
+
+  .icon-wrap {
+    width: 60px; height: 60px;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px; flex-shrink: 0;
+  }
+  .emoji-icon { font-size: 30px; line-height: 1; }
+
+  .bg-blue   { background: #EEF2FF; }
+  .bg-green  { background: #ECFDF5; }
+  .bg-orange { background: #FFF7ED; }
+  .bg-pink   { background: #FFF1F2; }
+  .bg-purple { background: #F5F3FF; }
+  .bg-yellow { background: #FEFCE8; }
+  .bg-teal   { background: #F0FDFA; }
+  .bg-gray   { background: #F8FAFC; }
+
+  .card-header { margin-bottom: 10px; }
+  .app-name { font-size: 14px; font-weight: 700; color: #1e1c18; line-height: 1.35; word-break: keep-all; }
+
+  .card-divider { height:1px; background:#f0ede8; margin:10px 0; }
+
+  .deadline-list { display:flex; flex-direction:column; gap:6px; }
+  .deadline-row { display:flex; align-items:flex-start; gap:7px; }
+  .deadline-dot { width:5px; height:5px; border-radius:50%; margin-top:5px; flex-shrink:0; }
+  .dot-blue{background:#6366f1;} .dot-green{background:#10b981;}
+  .dot-orange{background:#f59e0b;} .dot-pink{background:#f43f5e;}
+  .dot-purple{background:#8b5cf6;} .dot-yellow{background:#eab308;}
+  .dot-teal{background:#14b8a6;} .dot-gray{background:#94a3b8;}
+  .deadline-text { font-size:11.5px; color:#6b6560; line-height:1.55; word-break:keep-all; }
+  .deadline-text strong { font-weight:600; color:#3d3a34; }
+
+  /* ── Edit overlay ── */
+  .edit-overlay {
+    display: none;
+    position: absolute; inset: 0;
+    background: rgba(255,255,255,0.97);
+    border-radius: 19px;
+    padding: 14px 14px 12px;
+    flex-direction: column;
+    gap: 7px;
+    overflow-y: auto;
+    z-index: 10;
+  }
+  .edit-overlay.visible { display: flex; }
+
+  .edit-field { display:flex; flex-direction:column; gap:3px; }
+  .edit-field label { font-size:10px; font-weight:700; color:#9e9488; letter-spacing:1px; text-transform:uppercase; }
+  .edit-field input, .edit-field select {
+    font-family:inherit; font-size:12px;
+    border:1px solid #e2ddd4; border-radius:8px;
+    padding:6px 9px; color:#2d2a24; background:#fdfbf7;
+    width:100%; outline:none; transition: border-color 0.15s;
+  }
+  .edit-field input:focus, .edit-field select:focus { border-color:#6366f1; }
+
+  .dl-label { font-size:10px; font-weight:700; color:#9e9488; letter-spacing:1px; text-transform:uppercase; }
+  .dl-item { display:flex; gap:5px; align-items:center; margin-bottom:4px; }
+  .dl-item input { flex:1; font-family:inherit; font-size:11.5px;
+    border:1px solid #e2ddd4; border-radius:8px;
+    padding:5px 8px; color:#2d2a24; background:#fdfbf7;
+    outline:none; transition: border-color 0.15s; }
+  .dl-item input:focus { border-color:#6366f1; }
+  .dl-remove { background:none; border:none; cursor:pointer; color:#f43f5e; font-size:18px; line-height:1; flex-shrink:0; }
+  .dl-add {
+    font-family:inherit; font-size:11px; font-weight:600;
+    background:#f0ede8; border:none; border-radius:8px;
+    padding:5px 10px; cursor:pointer; color:#6b6560; margin-top:2px;
+  }
+  .dl-add:hover { background:#e2ddd4; }
+
+  .edit-actions { display:flex; gap:6px; margin-top:2px; }
+  .btn-save {
+    flex:1; font-family:inherit; font-size:12px; font-weight:700;
+    background:#2d2a24; color:#fff; border:none; border-radius:10px;
+    padding:8px; cursor:pointer;
+  }
+  .btn-delete {
+    font-family:inherit; font-size:12px; font-weight:600;
+    background:#fff1f2; color:#f43f5e; border:1px solid #fecdd3;
+    border-radius:10px; padding:8px 12px; cursor:pointer;
+  }
+  .btn-cancel {
+    font-family:inherit; font-size:12px; font-weight:600;
+    background:#f0ede8; color:#6b6560; border:none;
+    border-radius:10px; padding:8px 12px; cursor:pointer;
+  }
+
+  /* ── Add card button ── */
+  .add-card-btn {
+    background: #fff;
+    border: 2px dashed #d4cfc8;
+    border-radius: 20px;
+    padding: 20px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    min-height: 120px;
+    transition: border-color 0.18s, background 0.18s;
+    color: #b0a89e;
+    font-size: 12px; font-weight: 600;
+  }
+  .add-card-btn:hover { border-color:#a89f94; background:#fdfbf7; color:#6b6560; }
+  .add-card-btn .plus { font-size: 26px; line-height:1; }
+  .add-card-btn.visible { display: flex; }
+
+  /* ── Add section ── */
+  #addSectionBtn {
+    display: none;
+    font-family:inherit; font-size:12px; font-weight:600;
+    background:#fff; border:2px dashed #d4cfc8; border-radius:14px;
+    padding:12px 20px; cursor:pointer; color:#b0a89e;
+    width:100%; margin-top:8px; transition: border-color 0.18s, color 0.18s;
+  }
+  #addSectionBtn:hover { border-color:#a89f94; color:#6b6560; }
+  #addSectionBtn.visible { display: block; }
+
+  /* ── Password modal ── */
+  .modal-overlay {
+    display: none; position: fixed; inset:0;
+    background: rgba(0,0,0,0.3); backdrop-filter: blur(4px);
+    z-index: 200; align-items: center; justify-content: center;
+  }
+  .modal-overlay.visible { display: flex; }
+  .modal-box {
+    background: #fff; border-radius: 20px;
+    padding: 32px 28px; width: 300px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+  .modal-box h2 { font-size:16px; font-weight:700; margin-bottom:6px; }
+  .modal-box p { font-size:12px; color:#9e9488; margin-bottom:20px; }
+  .modal-box input {
+    font-family:inherit; font-size:14px;
+    width:100%; border:1px solid #e2ddd4; border-radius:10px;
+    padding:10px 14px; outline:none; margin-bottom:10px;
+    transition: border-color 0.15s;
+  }
+  .modal-box input:focus { border-color:#6366f1; }
+  .modal-err { font-size:12px; color:#f43f5e; margin-bottom:10px; min-height:16px; }
+  .modal-btns { display:flex; gap:8px; }
+  .modal-confirm {
+    flex:1; font-family:inherit; font-size:13px; font-weight:700;
+    background:#2d2a24; color:#fff; border:none; border-radius:10px; padding:10px; cursor:pointer;
+  }
+  .modal-cancel {
+    font-family:inherit; font-size:13px; font-weight:600;
+    background:#f0ede8; color:#6b6560; border:none; border-radius:10px; padding:10px 16px; cursor:pointer;
+  }
+
+  /* ── Export modal ── */
+  .export-box {
+    background: #fff; border-radius: 20px;
+    padding: 28px; width: min(92vw, 480px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+  .export-box h2 { font-size:15px; font-weight:700; margin-bottom:6px; }
+  .export-box p { font-size:12px; color:#9e9488; margin-bottom:14px; line-height:1.65; }
+  .export-box textarea {
+    font-family: monospace; font-size:11px;
+    width:100%; height:150px;
+    border:1px solid #e2ddd4; border-radius:10px;
+    padding:10px; outline:none; resize:none; color:#2d2a24; background:#fdfbf7;
+  }
+  .export-btns { display:flex; gap:8px; margin-top:12px; }
+  .btn-copy {
+    flex:1; font-family:inherit; font-size:13px; font-weight:700;
+    background:#2d2a24; color:#fff; border:none; border-radius:10px; padding:10px; cursor:pointer;
+  }
+  .btn-close-export {
+    font-family:inherit; font-size:13px; font-weight:600;
+    background:#f0ede8; color:#6b6560; border:none; border-radius:10px; padding:10px 16px; cursor:pointer;
+  }
+
+  @media (max-width: 480px) {
+    .grid { gap: 10px; }
+    .app-card { padding: 16px 14px 14px; border-radius: 16px; }
+    .icon-wrap { width:50px; height:50px; border-radius:13px; margin-bottom:11px; }
+    .emoji-icon { font-size:26px; }
+    .app-name { font-size:13px; }
+    .deadline-text { font-size:10.5px; }
+    main { padding: 24px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 비밀번호 모달 -->
+<div class="modal-overlay" id="pwModal">
+  <div class="modal-box">
+    <h2>🔒 편집 모드</h2>
+    <p>관리자 비밀번호를 입력해주세요</p>
+    <input type="password" id="pwInput" placeholder="비밀번호" onkeydown="if(event.key==='Enter')confirmPw()" />
+    <div class="modal-err" id="pwErr"></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closePwModal()">취소</button>
+      <button class="modal-confirm" onclick="confirmPw()">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- 비밀번호 변경 모달 -->
+<div class="modal-overlay" id="changePwModal">
+  <div class="modal-box">
+    <h2>🔑 비밀번호 변경</h2>
+    <p>현재 비밀번호를 확인 후 새 비밀번호를 설정해요</p>
+    <input type="password" id="cpCurrent" placeholder="현재 비밀번호" onkeydown="if(event.key==='Enter')confirmChangePw()" />
+    <input type="password" id="cpNew"     placeholder="새 비밀번호" style="margin-top:8px" onkeydown="if(event.key==='Enter')confirmChangePw()" />
+    <input type="password" id="cpConfirm" placeholder="새 비밀번호 확인" style="margin-top:8px" onkeydown="if(event.key==='Enter')confirmChangePw()" />
+    <div class="modal-err" id="cpErr"></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeChangePwModal()">취소</button>
+      <button class="modal-confirm" onclick="confirmChangePw()">변경</button>
+    </div>
+  </div>
+</div>
+
+<!-- GitHub 토큰 입력 모달 -->
+<div class="modal-overlay" id="tokenModal">
+  <div class="modal-box">
+    <h2>🔑 GitHub 토큰</h2>
+    <p>처음 한 번만 입력하면 브라우저에 저장돼요.<br>토큰은 파일에 저장되지 않아요.</p>
+    <input type="password" id="tokenInput" placeholder="ghp_..." onkeydown="if(event.key==='Enter')confirmToken()" />
+    <div class="modal-err" id="tokenErr"></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeTokenModal()">취소</button>
+      <button class="modal-confirm" onclick="confirmToken()">저장 후 업로드</button>
+    </div>
+  </div>
+</div>
+
+<!-- 저장 모달 -->
+<div class="modal-overlay" id="saveModal">
+  <div class="modal-box" style="text-align:center">
+    <div style="font-size:40px;margin-bottom:12px">💾</div>
+    <div id="saveMsg" style="font-size:15px;font-weight:600;color:#2d2a24">저장 중...</div>
+  </div>
+</div>
+
+<header>
+  <div class="logo">
+    <img src="https://j33www.github.io/tnkorea-hub/logo.png" alt="TNKorea" style="height:36px; width:auto; object-fit:contain;">
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button id="changePwBtn" onclick="openChangePwModal()" style="display:none;font-family:inherit;font-size:12px;font-weight:600;padding:7px 14px;border-radius:20px;border:1px solid #e2ddd4;cursor:pointer;background:#fdfbf7;color:#6b6560;">🔑 비밀번호 변경</button>
+    <button id="editToggleBtn" onclick="onEditBtnClick()">✏️ 편집</button>
+  </div>
+</header>
+
+<main id="mainContent"></main>
+
+<script>
+// ════════════════════════════════════════════════════
+//  DATA — GitHub 업로드 시 이 부분을 교체하세요
+// ════════════════════════════════════════════════════
+const DATA = {
+  "sections": [
+    {
+      "id": "s1",
+      "title": "경상비",
+      "cards": [
+        {
+          "id": "c1",
+          "name": "통신비\n지원 신청",
+          "url": "https://j33www.github.io/tnkorea-hub/telecom2.html",
+          "disabled": false,
+          "iconBg": "bg-blue",
+          "iconDot": "dot-blue",
+          "iconEmoji": "📱",
+          "deadlines": [
+            { "label": "제출기한", "desc": "매월 20일까지" }
+          ]
+        },
+        {
+          "id": "c2",
+          "name": "예산\n통제부",
+          "url": "",
+          "disabled": true,
+          "iconBg": "bg-orange",
+          "iconDot": "dot-orange",
+          "iconEmoji": "📊",
+          "deadlines": [
+            { "label": "작성 주기", "desc": "영수증 발생 시 매일 작성" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "행사",
+      "cards": [
+        {
+          "id": "c3",
+          "name": "신용카드\n이면 전표",
+          "url": "https://j33www.github.io/tnkorea-hub/card.html",
+          "disabled": false,
+          "iconBg": "bg-green",
+          "iconDot": "dot-green",
+          "iconEmoji": "💳",
+          "deadlines": [
+            { "label": "청구용 정산서", "desc": "행사 종료 후 3일 이내" },
+            { "label": "세무용 정산서", "desc": "행사 종료 후 7일 이내" }
+          ]
+        },
+        {
+          "id": "c4",
+          "name": "송금\n요청서",
+          "url": "",
+          "disabled": true,
+          "iconBg": "bg-pink",
+          "iconDot": "dot-pink",
+          "iconEmoji": "💸",
+          "deadlines": [
+            { "label": "인건비", "desc": "행사 종료 후 7일 이내 송금" }
+          ]
+        }
+      ]
+    }
+  ]
+};
+// ════════════════════════════════════════════════════
+
+// 기본 비밀번호 (브라우저 저장값 없을 때 사용) — 잊었다면 아래 값 확인: tnkorea1234
+const DEFAULT_PASSWORD = "tnkorea1234";
+function getPassword() { return localStorage.getItem("tnkorea_pw") || DEFAULT_PASSWORD; }
+function savePassword(pw) { localStorage.setItem("tnkorea_pw", pw); }
+let isEditMode = false;
+let editingCardId = null;
+
+const BG_OPTIONS  = ["bg-blue","bg-green","bg-orange","bg-pink","bg-purple","bg-yellow","bg-teal","bg-gray"];
+const DOT_OPTIONS = ["dot-blue","dot-green","dot-orange","dot-pink","dot-purple","dot-yellow","dot-teal","dot-gray"];
+const BG_LABELS   = ["파란색","초록색","주황색","분홍색","보라색","노란색","청록색","회색"];
+
+function uid() { return 'x' + Math.random().toString(36).slice(2,8); }
+
+// ── Render ──────────────────────────────────────────
+function render() {
+  const main = document.getElementById('mainContent');
+  main.innerHTML = '';
+
+  DATA.sections.forEach(sec => {
+    const secEl = document.createElement('div');
+    secEl.className = 'section';
+    secEl.dataset.secId = sec.id;
+
+    secEl.innerHTML = `
+      <div class="section-header">
+        <span class="section-title" ${isEditMode?'style="display:none"':''} id="stitle-${sec.id}">${sec.title}</span>
+        <input class="section-title-input${isEditMode?' visible':''}" id="stitle-input-${sec.id}"
+          value="${sec.title}" oninput="updateSectionTitle('${sec.id}',this.value)" />
+        <button class="section-del-btn${isEditMode?' visible':''}" onclick="deleteSection('${sec.id}')" title="섹션 삭제">✕</button>
+      </div>
+      <div class="grid" id="grid-${sec.id}"></div>
+    `;
+    main.appendChild(secEl);
+
+    const grid = secEl.querySelector(`#grid-${sec.id}`);
+    sec.cards.forEach(card => grid.appendChild(buildCardEl(card)));
+
+    // 카드 추가 버튼
+    const addBtn = document.createElement('div');
+    addBtn.className = `add-card-btn${isEditMode?' visible':''}`;
+    addBtn.innerHTML = `<span class="plus">＋</span><span>카드 추가</span>`;
+    addBtn.onclick = () => addCard(sec.id);
+    grid.appendChild(addBtn);
+  });
+
+  // 섹션 추가 버튼
+  const addSecBtn = document.createElement('button');
+  addSecBtn.id = 'addSectionBtn';
+  if (isEditMode) addSecBtn.classList.add('visible');
+  addSecBtn.textContent = '＋ 섹션 추가';
+  addSecBtn.onclick = addSection;
+  main.appendChild(addSecBtn);
+
+  if (editingCardId) openOverlay(editingCardId);
+}
+
+function buildCardEl(card) {
+  const wrap = document.createElement('div');
+  wrap.id = `wrap-${card.id}`;
+
+  let cardEl;
+  if (!isEditMode && !card.disabled) {
+    cardEl = document.createElement('a');
+    cardEl.href = card.url;
+    cardEl.target = '_blank';
+    cardEl.rel = 'noopener noreferrer';
+    cardEl.className = 'app-card clickable';
+  } else {
+    cardEl = document.createElement('div');
+    cardEl.className = `app-card${card.disabled && !isEditMode ? ' disabled' : ''}${isEditMode ? ' editable' : ''}`;
+  }
+
+  if (isEditMode) cardEl.onclick = () => toggleOverlay(card.id);
+
+  const nameParts = card.name.split('\n');
+  cardEl.innerHTML = `
+    <div class="icon-wrap ${card.iconBg}">
+      <span class="emoji-icon">${card.iconEmoji}</span>
+    </div>
+    <div class="card-header">
+      <div class="app-name">${nameParts.join('<br>')}</div>
+    </div>
+    <div class="card-divider"></div>
+    <div class="deadline-list">
+      ${card.deadlines.map(d=>`
+        <div class="deadline-row">
+          <div class="deadline-dot ${card.iconDot}"></div>
+          <div class="deadline-text"><strong>${d.label}</strong> ${d.desc}</div>
+        </div>`).join('')}
+    </div>
+  `;
+
+  if (isEditMode) {
+    const overlay = document.createElement('div');
+    overlay.className = 'edit-overlay';
+    overlay.id = `eo-${card.id}`;
+    overlay.addEventListener('click', e => e.stopPropagation());
+    overlay.innerHTML = buildEditForm(card);
+    cardEl.appendChild(overlay);
+  }
+
+  wrap.appendChild(cardEl);
+  return wrap;
+}
+
+function buildEditForm(card) {
+  const bgOpts = BG_OPTIONS.map((bg,i)=>
+    `<option value="${bg}" ${card.iconBg===bg?'selected':''}>${BG_LABELS[i]}</option>`).join('');
+  const dlItems = card.deadlines.map((d,i)=>`
+    <div class="dl-item" id="dli-${card.id}-${i}">
+      <input value="${d.label}" placeholder="항목명" oninput="updateDl('${card.id}',${i},'label',this.value)" />
+      <input value="${d.desc}"  placeholder="내용"   oninput="updateDl('${card.id}',${i},'desc',this.value)" />
+      <button class="dl-remove" onclick="event.stopPropagation();removeDl('${card.id}',${i})">×</button>
+    </div>`).join('');
+
+  return `
+    <div class="edit-field">
+      <label>카드 이름 (줄바꿈: \\n)</label>
+      <input value="${card.name.replace(/\n/g,'\\n')}"
+        oninput="updateCard('${card.id}','name',this.value.replace(/\\\\n/g,'\\n'))" />
+    </div>
+    <div class="edit-field">
+      <label>링크 URL</label>
+      <input value="${card.url}" placeholder="https://..."
+        oninput="updateCard('${card.id}','url',this.value)" />
+    </div>
+    <div class="edit-field">
+      <label>상태</label>
+      <select onchange="updateCard('${card.id}','disabled',this.value==='true')">
+        <option value="false" ${!card.disabled?'selected':''}>활성화</option>
+        <option value="true"  ${card.disabled?'selected':''}>비활성화 (준비중)</option>
+      </select>
+    </div>
+    <div class="edit-field">
+      <label>아이콘 이모지</label>
+      <input value="${card.iconEmoji}" placeholder="이모지"
+        oninput="updateCard('${card.id}','iconEmoji',this.value)" />
+    </div>
+    <div class="edit-field">
+      <label>아이콘 배경색</label>
+      <select onchange="updateCardColor('${card.id}',this.value)">${bgOpts}</select>
+    </div>
+    <div class="dl-label" style="margin-top:2px">마감일 / 안내</div>
+    <div id="dl-list-${card.id}">${dlItems}</div>
+    <button class="dl-add" onclick="event.stopPropagation();addDl('${card.id}')">＋ 항목 추가</button>
+    <div class="edit-actions">
+      <button class="btn-save"   onclick="event.stopPropagation();saveCard('${card.id}')">저장</button>
+      <button class="btn-delete" onclick="event.stopPropagation();deleteCard('${card.id}')">삭제</button>
+      <button class="btn-cancel" onclick="event.stopPropagation();closeOverlay('${card.id}')">닫기</button>
+    </div>
+  `;
+}
+
+// ── Overlay ──────────────────────────────────────────
+function toggleOverlay(id) {
+  const eo = document.getElementById(`eo-${id}`);
+  if (!eo) return;
+  if (eo.classList.contains('visible')) {
+    closeOverlay(id);
+  } else {
+    if (editingCardId) closeOverlay(editingCardId);
+    eo.classList.add('visible');
+    editingCardId = id;
+  }
+}
+function openOverlay(id) {
+  const eo = document.getElementById(`eo-${id}`);
+  if (eo) { eo.classList.add('visible'); editingCardId = id; }
+}
+function closeOverlay(id) {
+  const eo = document.getElementById(`eo-${id}`);
+  if (eo) eo.classList.remove('visible');
+  if (editingCardId === id) editingCardId = null;
+}
+
+// ── Data helpers ─────────────────────────────────────
+function findCard(id) {
+  for (const s of DATA.sections)
+    for (const c of s.cards)
+      if (c.id === id) return c;
+  return null;
+}
+
+function updateCard(id, key, val) {
+  const c = findCard(id); if (!c) return;
+  c[key] = val;
+  if (key === 'name') {
+    const el = document.querySelector(`#wrap-${id} .app-name`);
+    if (el) el.innerHTML = val.split('\n').join('<br>');
+  }
+  if (key === 'iconEmoji') {
+    const el = document.querySelector(`#wrap-${id} .emoji-icon`);
+    if (el) el.textContent = val;
+  }
+}
+
+function updateCardColor(id, bgVal) {
+  const c = findCard(id); if (!c) return;
+  const idx = BG_OPTIONS.indexOf(bgVal);
+  c.iconBg = bgVal;
+  c.iconDot = DOT_OPTIONS[idx] || 'dot-gray';
+  const iw = document.querySelector(`#wrap-${id} .icon-wrap`);
+  if (iw) iw.className = `icon-wrap ${bgVal}`;
+  document.querySelectorAll(`#wrap-${id} .deadline-dot`).forEach(d => d.className = `deadline-dot ${c.iconDot}`);
+}
+
+function updateDl(id, i, key, val) {
+  const c = findCard(id);
+  if (c && c.deadlines[i]) c.deadlines[i][key] = val;
+}
+
+function addDl(id) {
+  const c = findCard(id); if (!c) return;
+  c.deadlines.push({ label: "항목명", desc: "내용 입력" });
+  const i = c.deadlines.length - 1;
+  const d = c.deadlines[i];
+  const list = document.getElementById(`dl-list-${id}`);
+  if (list) {
+    const item = document.createElement('div');
+    item.className = 'dl-item'; item.id = `dli-${id}-${i}`;
+    item.innerHTML = `
+      <input value="${d.label}" placeholder="항목명" oninput="updateDl('${id}',${i},'label',this.value)" />
+      <input value="${d.desc}"  placeholder="내용"   oninput="updateDl('${id}',${i},'desc',this.value)" />
+      <button class="dl-remove" onclick="event.stopPropagation();removeDl('${id}',${i})">×</button>`;
+    list.appendChild(item);
+  }
+}
+
+function removeDl(id, i) {
+  const c = findCard(id); if (!c) return;
+  c.deadlines.splice(i, 1);
+  editingCardId = id;
+  render();
+}
+
+function saveCard(id) { editingCardId = null; render(); }
+
+function deleteCard(id) {
+  if (!confirm('이 카드를 삭제할까요?')) return;
+  DATA.sections.forEach(s => { s.cards = s.cards.filter(c => c.id !== id); });
+  editingCardId = null;
+  render();
+}
+
+function addCard(secId) {
+  const sec = DATA.sections.find(s => s.id === secId); if (!sec) return;
+  const nc = { id: uid(), name: "새 카드", url: "", disabled: false,
+    iconBg: "bg-blue", iconDot: "dot-blue", iconEmoji: "📄",
+    deadlines: [{ label: "안내", desc: "내용을 입력하세요" }] };
+  sec.cards.push(nc);
+  editingCardId = nc.id;
+  render();
+}
+
+function updateSectionTitle(secId, val) {
+  const s = DATA.sections.find(x => x.id === secId); if (!s) return;
+  s.title = val;
+  const el = document.getElementById(`stitle-${secId}`);
+  if (el) el.textContent = val;
+}
+
+function deleteSection(secId) {
+  if (!confirm('이 섹션과 모든 카드를 삭제할까요?')) return;
+  DATA.sections = DATA.sections.filter(s => s.id !== secId);
+  render();
+}
+
+function addSection() {
+  DATA.sections.push({ id: uid(), title: "새 섹션", cards: [] });
+  render();
+}
+
+// ── Edit mode ─────────────────────────────────────────
+function onEditBtnClick() {
+  if (!isEditMode) {
+    document.getElementById('pwModal').classList.add('visible');
+    setTimeout(() => document.getElementById('pwInput').focus(), 80);
+  } else {
+    exitEditMode();
+  }
+}
+function confirmPw() {
+  if (document.getElementById("pwInput").value === getPassword()) {
+    closePwModal(); enterEditMode();
+  } else {
+    document.getElementById('pwErr').textContent = '비밀번호가 틀렸습니다.';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+  }
+}
+function closePwModal() {
+  document.getElementById('pwModal').classList.remove('visible');
+  document.getElementById('pwInput').value = '';
+  document.getElementById('pwErr').textContent = '';
+}
+function enterEditMode() {
+  isEditMode = true;
+  const btn = document.getElementById('editToggleBtn');
+  btn.textContent = '✅ 완료'; btn.classList.add('active');
+  document.getElementById('changePwBtn').style.display = 'block';
+  render();
+}
+function exitEditMode() {
+  isEditMode = false; editingCardId = null;
+  const btn = document.getElementById('editToggleBtn');
+  btn.textContent = '✏️ 편집'; btn.classList.remove('active');
+  document.getElementById('changePwBtn').style.display = 'none';
+  render();
+  showExport();
+}
+
+// ── 비밀번호 변경 ─────────────────────────────────────
+function openChangePwModal() {
+  document.getElementById('changePwModal').classList.add('visible');
+  document.getElementById('cpCurrent').value = '';
+  document.getElementById('cpNew').value = '';
+  document.getElementById('cpConfirm').value = '';
+  document.getElementById('cpErr').textContent = '';
+  setTimeout(() => document.getElementById('cpCurrent').focus(), 80);
+}
+function closeChangePwModal() {
+  document.getElementById('changePwModal').classList.remove('visible');
+}
+function confirmChangePw() {
+  const cur     = document.getElementById('cpCurrent').value;
+  const nw      = document.getElementById('cpNew').value;
+  const confirm = document.getElementById('cpConfirm').value;
+  const errEl   = document.getElementById('cpErr');
+
+  if (cur !== getPassword()) {
+    errEl.textContent = '현재 비밀번호가 틀렸습니다.';
+    document.getElementById('cpCurrent').value = '';
+    document.getElementById('cpCurrent').focus();
+    return;
+  }
+  if (nw.length < 4) {
+    errEl.textContent = '새 비밀번호는 4자 이상이어야 해요.';
+    return;
+  }
+  if (nw !== confirm) {
+    errEl.textContent = '새 비밀번호가 일치하지 않아요.';
+    document.getElementById('cpConfirm').value = '';
+    document.getElementById('cpConfirm').focus();
+    return;
+  }
+  savePassword(nw);
+  closeChangePwModal();
+  alert('✅ 비밀번호가 변경되었습니다!');
+}
+
+// ── GitHub 자동 저장 ──────────────────────────────────
+const GITHUB_OWNER = "j33www";
+const GITHUB_REPO  = "tnkorea-hub";
+const GITHUB_FILE  = "index.html";
+function getToken() { return localStorage.getItem("tnkorea_gh_token") || ""; }
+function saveToken(t) { localStorage.setItem("tnkorea_gh_token", t); }
+
+async function saveToGitHub() {
+  // 토큰이 없으면 입력 모달 먼저
+  if (!getToken()) {
+    document.getElementById('tokenModal').classList.add('visible');
+    setTimeout(() => document.getElementById('tokenInput').focus(), 80);
+    return;
+  }
+  const saveModal = document.getElementById('saveModal');
+  const saveMsg   = document.getElementById('saveMsg');
+  saveModal.classList.add('visible');
+  saveMsg.textContent = '저장 중...';
+
+  try {
+    const infoRes = await fetch(
+      `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE}`,
+      { headers: { Authorization: `token ${getToken()}` } }
+    );
+    const info = await infoRes.json();
+    const sha = info.sha;
+
+    const newDataStr = `const DATA = ${JSON.stringify(DATA, null, 2)};`;
+    const currentContent = decodeURIComponent(escape(atob(info.content.replace(/\n/g, ''))));
+    const dataStart = currentContent.indexOf('const DATA = {');
+    const dataEnd   = currentContent.indexOf('\n};', dataStart) + 3;
+    const updatedContent = currentContent.slice(0, dataStart) + newDataStr + currentContent.slice(dataEnd);
+
+    const updateRes = await fetch(
+      `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE}`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `token ${getToken()}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: '업무 시스템 업데이트',
+          content: btoa(unescape(encodeURIComponent(updatedContent))),
+          sha: sha
+        })
+      }
+    );
+
+    if (updateRes.ok) {
+      saveMsg.textContent = '✅ 저장 완료!';
+      setTimeout(() => saveModal.classList.remove('visible'), 2000);
+    } else {
+      const err = await updateRes.json();
+      saveMsg.textContent = '❌ 저장 실패: ' + (err.message || '오류');
+    }
+  } catch (e) {
+    saveMsg.textContent = '❌ 오류: ' + e.message;
+  }
+}
+
+// ── GitHub 토큰 모달 ─────────────────────────────────
+function closeTokenModal() {
+  document.getElementById('tokenModal').classList.remove('visible');
+  document.getElementById('tokenInput').value = '';
+  document.getElementById('tokenErr').textContent = '';
+}
+async function confirmToken() {
+  const val = document.getElementById('tokenInput').value.trim();
+  if (!val.startsWith('ghp_') && !val.startsWith('github_pat_')) {
+    document.getElementById('tokenErr').textContent = '올바른 토큰 형식이 아니에요 (ghp_ 로 시작해야 해요)';
+    return;
+  }
+  saveToken(val);
+  closeTokenModal();
+  await saveToGitHub();
+}
+
+function showExport() { saveToGitHub(); }
+function closeExport() {
+  document.getElementById('saveModal').classList.remove('visible');
+}
+
+// 토큰 초기 저장 (최초 1회)
+render();
+</script>
+</body>
+</html>
