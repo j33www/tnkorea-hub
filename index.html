@@ -424,16 +424,66 @@
 // ════════════════════════════════════════════════════
 const DATA = {
   "quicklinks": [
-    { "name": "나라장터", "emoji": "🏛️", "url": "https://www.g2b.go.kr/", "group": "정부기관" },
-    { "name": "국민건강보험", "emoji": "🏥", "url": "https://edi.nhis.or.kr/homeapp/wep/m/retrieveMain.xx", "group": "정부기관" },
-    { "name": "국세청 홈택스", "emoji": "📋", "url": "https://hometax.go.kr/websquare/websquare.html?w2xPath=/ui/pp/index_pp.xml&menuCd=index3", "group": "정부기관" },
-    { "name": "정부24", "emoji": "🏢", "url": "https://plus.gov.kr/", "group": "정부기관" },
-    { "name": "위택스", "emoji": "💰", "url": "https://www.wetax.go.kr/static/sim/SimpleNc2.html", "group": "정부기관" },
-    { "name": "나라빌", "emoji": "📄", "url": "https://www.narabill.go.kr/", "group": "정부기관" },
-    { "name": "우리은행", "emoji": "🏦", "url": "https://www.wooribank.com/", "group": "금융기관" },
-    { "name": "신한은행", "emoji": "🏦", "url": "https://www.shinhan.com/", "group": "금융기관" },
-    { "name": "미래에셋증권", "emoji": "📈", "url": "https://www.miraeasset.com/", "group": "금융기관" },
-    { "name": "서울보증보험", "emoji": "🛡️", "url": "https://www.sgic.co.kr/", "group": "금융기관" }
+    {
+      "name": "나라장터",
+      "emoji": "🏛️",
+      "url": "https://www.g2b.go.kr/",
+      "group": "정부기관"
+    },
+    {
+      "name": "국민건강보험",
+      "emoji": "🏥",
+      "url": "https://edi.nhis.or.kr/homeapp/wep/m/retrieveMain.xx",
+      "group": "정부기관"
+    },
+    {
+      "name": "국세청 홈택스",
+      "emoji": "📋",
+      "url": "https://hometax.go.kr/websquare/websquare.html?w2xPath=/ui/pp/index_pp.xml&menuCd=index3",
+      "group": "정부기관"
+    },
+    {
+      "name": "정부24",
+      "emoji": "🏢",
+      "url": "https://plus.gov.kr/",
+      "group": "정부기관"
+    },
+    {
+      "name": "위택스",
+      "emoji": "💰",
+      "url": "https://www.wetax.go.kr/static/sim/SimpleNc2.html",
+      "group": "정부기관"
+    },
+    {
+      "name": "우리은행",
+      "emoji": "🏦",
+      "url": "https://www.wooribank.com/",
+      "group": "금융기관"
+    },
+    {
+      "name": "신한은행",
+      "emoji": "🏦",
+      "url": "https://www.shinhan.com/",
+      "group": "금융기관"
+    },
+    {
+      "name": "미래에셋증권",
+      "emoji": "📈",
+      "url": "https://www.miraeasset.com/",
+      "group": "금융기관"
+    },
+    {
+      "name": "서울보증보험",
+      "emoji": "🛡️",
+      "url": "https://www.sgic.co.kr/",
+      "group": "금융기관"
+    },
+    {
+      "name": "나라빌",
+      "emoji": "🔗",
+      "url": "https://www.narabill.kr/",
+      "group": "정부기관"
+    }
   ],
   "sections": [
     {
@@ -449,7 +499,10 @@ const DATA = {
           "iconDot": "dot-blue",
           "iconEmoji": "📱",
           "deadlines": [
-            { "label": "제출기한", "desc": "매월 20일까지" }
+            {
+              "label": "제출기한",
+              "desc": "매월 20일까지"
+            }
           ]
         },
         {
@@ -461,7 +514,10 @@ const DATA = {
           "iconDot": "dot-orange",
           "iconEmoji": "📊",
           "deadlines": [
-            { "label": "작성 주기", "desc": "영수증 발생 시 매일 작성" }
+            {
+              "label": "작성 주기",
+              "desc": "영수증 발생 시 매일 작성"
+            }
           ]
         }
       ]
@@ -479,8 +535,14 @@ const DATA = {
           "iconDot": "dot-green",
           "iconEmoji": "💳",
           "deadlines": [
-            { "label": "청구용 정산서", "desc": "행사 종료 후 3일 이내" },
-            { "label": "세무용 정산서", "desc": "행사 종료 후 7일 이내" }
+            {
+              "label": "청구용 정산서",
+              "desc": "행사 종료 후 3일 이내"
+            },
+            {
+              "label": "세무용 정산서",
+              "desc": "행사 종료 후 7일 이내"
+            }
           ]
         },
         {
@@ -492,7 +554,10 @@ const DATA = {
           "iconDot": "dot-pink",
           "iconEmoji": "💸",
           "deadlines": [
-            { "label": "인건비", "desc": "행사 종료 후 7일 이내 송금" }
+            {
+              "label": "인건비",
+              "desc": "행사 종료 후 7일 이내 송금"
+            }
           ]
         }
       ]
